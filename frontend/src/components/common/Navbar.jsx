@@ -1,255 +1,418 @@
-import { useState, useEffect, useRef } from "react";
-import { Link } from "react-router-dom";
+import React, { useState, useEffect } from 'react';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { useTheme } from '../../contexts/ThemeContext';
+import Button from '../ui/Button';
 
-export default function Navbar() {
+const Navbar = () => {
+  const location = useLocation();
+  const navigate = useNavigate();
+  const { theme, toggleTheme } = useTheme();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const menuRef = useRef(null);
-  const lastFocusedElementRef = useRef(null);
+  const [isScrolled, setIsScrolled] = useState(false);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isServicesDropdownOpen, setIsServicesDropdownOpen] = useState(false);
 
-  const openMenu = () => {
-    lastFocusedElementRef.current = document.activeElement;
-    setIsMenuOpen(true);
-
-    // Move focus into menu after state update
-    setTimeout(() => {
-      menuRef.current?.focus();
-    }, 0);
-  };
-
-  const closeMenu = () => {
-    setIsMenuOpen(false);
-
-    // Restore focus after state update
-    setTimeout(() => {
-      lastFocusedElementRef.current?.focus();
-    }, 0);
-  };
-
+  // Check scroll position for navbar background
   useEffect(() => {
-    const handleEscapeKey = (e) => {
-      if (e.key === "Escape" && isMenuOpen) {
-        closeMenu();
+    const handleScroll = () => {
+      setIsScrolled(window.scrollY > 10);
+    };
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  // Check authentication status
+  useEffect(() => {
+    const token = localStorage.getItem('auth_token');
+    setIsAuthenticated(!!token);
+  }, []);
+
+  // Close dropdown on escape key
+  useEffect(() => {
+    const handleEscape = (e) => {
+      if (e.key === 'Escape') {
+        setIsServicesDropdownOpen(false);
       }
     };
+    document.addEventListener('keydown', handleEscape);
+    return () => document.removeEventListener('keydown', handleEscape);
+  }, []);
 
-    document.addEventListener("keydown", handleEscapeKey);
+  const isActive = (path) => {
+    return location.pathname === path;
+  };
 
-    return () => {
-      document.removeEventListener("keydown", handleEscapeKey);
+  const navLinks = [
+    { path: '/', label: 'Home', icon: '🏠' },
+    { path: '/doctors', label: 'Doctors', icon: '👨‍⚕️' },
+    { path: '/services', label: 'Services', icon: '🩺' },
+    { path: '/about', label: 'About', icon: 'ℹ️' },
+    { path: '/contact', label: 'Contact', icon: '📧' },
+  ];
+
+  // Services dropdown items
+  const services = [
+    { 
+      path: '/services/cardiology', 
+      label: 'Cardiology', 
+      icon: '❤️',
+      description: 'Heart care and treatment'
+    },
+    { 
+      path: '/services/dermatology', 
+      label: 'Dermatology', 
+      icon: '🧴',
+      description: 'Skin care and treatment'
+    },
+    { 
+      path: '/services/neurology', 
+      label: 'Neurology', 
+      icon: '🧠',
+      description: 'Brain and nervous system'
+    },
+    { 
+      path: '/services/pediatrics', 
+      label: 'Pediatrics', 
+      icon: '👶',
+      description: 'Child healthcare'
+    },
+    { 
+      path: '/services/orthopedics', 
+      label: 'Orthopedics', 
+      icon: '🦴',
+      description: 'Bone and joint care'
+    },
+    { 
+      path: '/services/gynecology', 
+      label: 'Gynecology', 
+      icon: '🌸',
+      description: 'Women\'s health'
+    },
+    { 
+      path: '/services/ophthalmology', 
+      label: 'Ophthalmology', 
+      icon: '👁️',
+      description: 'Eye care and surgery'
+    },
+    { 
+      path: '/services/ent', 
+      label: 'ENT', 
+      icon: '👂',
+      description: 'Ear, nose, throat care'
+    },
+    { 
+      path: '/services/psychiatry', 
+      label: 'Psychiatry', 
+      icon: '🧘',
+      description: 'Mental health services'
+    },
+    { 
+      path: '/services/dentistry', 
+      label: 'Dentistry', 
+      icon: '🦷',
+      description: 'Dental care and treatment'
+    },
+  ];
+
+  const handleLogout = () => {
+    localStorage.removeItem('auth_token');
+    setIsAuthenticated(false);
+    navigate('/');
+    setIsMenuOpen(false);
+  };
+
+  const handleLogin = () => {
+    navigate('/login');
+    setIsMenuOpen(false);
+  };
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (isServicesDropdownOpen && !event.target.closest('.services-dropdown')) {
+        setIsServicesDropdownOpen(false);
+      }
     };
-  }, [isMenuOpen]);
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [isServicesDropdownOpen]);
 
   return (
-    <header>
-      {/* topbar */}
-      <div className="px-4 py-2.5 bg-neutral-100 dark:bg-neutral-800">
-        <div className="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-3">
-          <div className="text-slate-900 dark:text-slate-300 text-[13px] flex flex-wrap items-center gap-x-4 gap-y-1">
-            <span>
-              <span className="font-semibold">Address:</span>
-              SWF New York 185669
-            </span>
-            <span className="hidden sm:inline">|</span>
-            <span>
-              <span className="font-semibold">Contact:</span>
-              1800333665
-            </span>
-          </div>
-
-          <div className="flex items-center gap-4">
-            <a
-              to="#"
-              className="block focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 rounded"
-              aria-label="Facebook"
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                className="size-4 fill-slate-900 hover:fill-blue-700 dark:hover:fill-blue-400 dark:fill-slate-300 transition"
-                aria-hidden="true"
-                viewBox="0 0 155.139 155.139"
-              >
-                <path
-                  d="M89.584 155.139V84.378h23.742l3.562-27.585H89.584V39.184c0-7.984 2.208-13.425 13.67-13.425l14.595-.006V1.08C115.325.752 106.661 0 96.577 0 75.52 0 61.104 12.853 61.104 36.452v20.341H37.29v27.585h23.814v70.761z"
-                  data-original="#010002"
-                />
-              </svg>
-            </a>
-
-            <a
-              to="#"
-              className="block focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 rounded"
-              aria-label="LinkedIn"
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                className="size-4 fill-slate-900 hover:fill-blue-700 dark:hover:fill-blue-400 dark:fill-slate-300 transition"
-                aria-hidden="true"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  d="M23.994 24v-.001H24v-8.802c0-4.306-.927-7.623-5.961-7.623-2.42 0-4.044 1.328-4.707 2.587h-.07V7.976H8.489v16.023h4.97v-7.934c0-2.089.396-4.109 2.983-4.109 2.549 0 2.587 2.384 2.587 4.243V24zM.396 7.977h4.976V24H.396zM2.882 0C1.291 0 0 1.291 0 2.882s1.291 2.909 2.882 2.909 2.882-1.318 2.882-2.909A2.884 2.884 0 0 0 2.882 0"
-                  data-original="#ffffff"
-                />
-              </svg>
-            </a>
-
-            <a
-              to="#"
-              className="block focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 rounded"
-              aria-label="Twitter"
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                className="size-4 fill-slate-900 hover:fill-blue-700 dark:hover:fill-blue-400 dark:fill-slate-300 transition"
-                aria-hidden="true"
-                viewBox="0 0 1226.37 1226.37"
-              >
-                <path
-                  d="M727.348 519.284 1174.075 0h-105.86L680.322 450.887 370.513 0H13.185l468.492 681.821L13.185 1226.37h105.866l409.625-476.152 327.181 476.152h357.328L727.322 519.284zM582.35 687.828l-47.468-67.894-377.686-540.24H319.8l304.797 435.991 47.468 67.894 396.2 566.721H905.661L582.35 687.854z"
-                  data-original="#000000"
-                />
-              </svg>
-            </a>
-          </div>
-        </div>
-      </div>
-
-      <nav
-        className="flex py-2 px-4 md:px-8 bg-white border-b border-slate-300 dark:border-neutral-700 dark:bg-neutral-900 min-h-[68px] relative z-20"
-        aria-label="Main navigation"
-      >
-        <div className="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-4 w-full">
-          <a
-            to="#"
-            className="min-w-9 inline-block focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 rounded"
+    <header 
+      className={`sticky top-0 z-sticky transition-all duration-300 ${
+        isScrolled 
+          ? 'bg-white/95 dark:bg-gray-800/95 backdrop-blur-md shadow-lg' 
+          : 'bg-white dark:bg-gray-800 shadow-sm'
+      }`}
+    >
+      <div className="container-custom">
+        <div className="flex-between py-4">
+          {/* Logo */}
+          <Link 
+            to="/" 
+            className="flex items-center gap-2 group"
+            onClick={() => setIsMenuOpen(false)}
           >
-            <span className="sr-only">Your Company</span>
-            <img
-              src="https://readymadeui.com/logo-alt.svg"
-              alt="readymadeui logo"
-              className="h-9 w-auto"
-            />
-          </a>
+            <span className="text-3xl group-hover:scale-110 transition-transform duration-300">
+              🏥
+            </span>
+            <span className="text-xl font-bold text-gray-900 dark:text-white">
+              Clinic<span className="text-primary-600">MS</span>
+            </span>
+          </Link>
 
-          <div
-            id="collapseMenu"
-            ref={menuRef}
-            tabIndex={-1}
-            className={`${isMenuOpen ? "block" : "hidden"} lg:block max-lg:bg-white dark:max-lg:bg-neutral-900 max-lg:border-l max-lg:border-slate-300 dark:max-lg:border-neutral-700 max-lg:w-1/2 max-lg:fixed max-lg:top-0 max-lg:right-0 max-lg:h-full max-lg:shadow-md max-lg:overflow-auto max-sm:w-full z-50 outline-none`}
-          >
-            <div className="py-2 px-4 flex justify-between items-center border-b border-slate-300 sticky top-0 bg-white dark:border-neutral-700 dark:bg-neutral-900 lg:hidden max-lg:min-h-[68px]">
-              <Link
-                to="/"
-                className="inline-block focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 rounded"
-              >
-                <span className="sr-only">Your Company</span>
-                <img
-                  src="https://readymadeui.com/logo-alt.svg"
-                  alt="readymadeui logo dialog"
-                  className="h-9 w-auto"
-                />
-              </Link>
-              <button
-                type="button"
-                aria-controls="collapseMenu"
-                onClick={closeMenu}
-                id="toggleClose"
-                className="cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 rounded"
-              >
-                <span className="sr-only">Close main menu</span>
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="size-4 fill-slate-900 dark:fill-slate-50"
-                  aria-hidden="true"
-                  viewBox="0 0 329.269 329"
-                >
-                  <path
-                    d="M194.8 164.77 323.013 36.555c8.343-8.34 8.343-21.825 0-30.164-8.34-8.34-21.825-8.34-30.164 0L164.633 134.605 36.422 6.391c-8.344-8.34-21.824-8.34-30.164 0-8.344 8.34-8.344 21.824 0 30.164l128.21 128.215L6.259 292.984c-8.344 8.34-8.344 21.825 0 30.164a21.27 21.27 0 0 0 15.082 6.25c5.46 0 10.922-2.09 15.082-6.25l128.21-128.214 128.216 128.214a21.27 21.27 0 0 0 15.082 6.25c5.46 0 10.922-2.09 15.082-6.25 8.343-8.34 8.343-21.824 0-30.164zm0 0"
-                    data-original="#000000"
-                  />
-                </svg>
-              </button>
-            </div>
+          {/* Desktop Navigation */}
+          <nav className="hidden md:flex items-center gap-1">
+            {navLinks.map((link) => {
+              // Special handling for Services link with dropdown
+              if (link.path === '/services') {
+                return (
+                  <div key={link.path} className="relative services-dropdown">
+                    <button
+                      onClick={() => setIsServicesDropdownOpen(!isServicesDropdownOpen)}
+                      onMouseEnter={() => setIsServicesDropdownOpen(true)}
+                      className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 flex items-center gap-2 ${
+                        location.pathname.startsWith('/services')
+                          ? 'text-primary-600 bg-primary-50 dark:bg-primary-900/20'
+                          : 'text-gray-600 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 hover:bg-gray-50 dark:hover:bg-gray-700/50'
+                      }`}
+                      aria-expanded={isServicesDropdownOpen}
+                      aria-haspopup="true"
+                    >
+                      <span>{link.icon}</span>
+                      {link.label}
+                      <span className={`ml-1 transition-transform duration-200 ${isServicesDropdownOpen ? 'rotate-180' : ''}`}>
+                        ▼
+                      </span>
+                    </button>
 
-            <ul className="flex flex-col gap-8 font-semibold text-sm text-slate-900 dark:text-slate-50 lg:flex-row max-lg:p-6">
-              <li>
-                <Link
-                  to="/"
-                  className="hover:text-blue-700 dark:hover:text-blue-400 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 rounded"
-                  aria-current="page"
-                >
-                  Home
-                </Link>
-              </li>
-              <li>
-                <Link
-                  to=""
-                  className="hover:text-blue-700 dark:hover:text-blue-400 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 rounded"
-                >
-                  Doctor
-                </Link>
-              </li>
-              <li>
-                <Link
-                  to="/doctor"
-                  className="hover:text-blue-700 dark:hover:text-blue-400 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 rounded"
-                >
-                  Blog
-                </Link>
-              </li>
-              <li>
-                <Link
-                  to="/services"
-                  className="hover:text-blue-700 dark:hover:text-blue-400 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 rounded"
-                >
-                  services
-                </Link>
-              </li>
-              <li>
-                <Link
-                  to="/contact"
-                  className="hover:text-blue-700 dark:hover:text-blue-400 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 rounded"
-                >
-                  Contact
-                </Link>
-              </li>
-            </ul>
-          </div>
+                    {/* Services Dropdown */}
+                    {isServicesDropdownOpen && (
+                      <div 
+                        className="absolute top-full left-0 mt-1 w-72 bg-white dark:bg-gray-800 rounded-xl shadow-2xl border border-gray-200 dark:border-gray-700 py-2 animate-slide-down"
+                        onMouseLeave={() => setIsServicesDropdownOpen(false)}
+                      >
+                        <div className="px-4 py-2 border-b border-gray-200 dark:border-gray-700">
+                          <p className="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                            All Services
+                          </p>
+                        </div>
+                        <div className="max-h-96 overflow-y-auto">
+                          {services.map((service) => (
+                            <Link
+                              key={service.path}
+                              to={service.path}
+                              className="flex items-start gap-3 px-4 py-3 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors"
+                              onClick={() => {
+                                setIsServicesDropdownOpen(false);
+                                setIsMenuOpen(false);
+                              }}
+                            >
+                              <span className="text-2xl flex-shrink-0 mt-0.5">
+                                {service.icon}
+                              </span>
+                              <div className="flex-1 min-w-0">
+                                <p className="text-sm font-medium text-gray-900 dark:text-white">
+                                  {service.label}
+                                </p>
+                                <p className="text-xs text-gray-500 dark:text-gray-400 truncate">
+                                  {service.description}
+                                </p>
+                              </div>
+                              <span className="text-gray-400 text-xs">→</span>
+                            </Link>
+                          ))}
+                        </div>
+                        <div className="px-4 py-2 border-t border-gray-200 dark:border-gray-700">
+                          <Link
+                            to="/services"
+                            className="text-sm text-primary-600 hover:text-primary-700 font-medium flex items-center gap-2"
+                            onClick={() => {
+                              setIsServicesDropdownOpen(false);
+                              setIsMenuOpen(false);
+                            }}
+                          >
+                            View All Services →
+                          </Link>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                );
+              }
 
-          <div className="flex items-center gap-4">
-            <Link
-              to="/appointmnet"
-              className="py-2 px-3.5 text-sm rounded-md font-semibold cursor-pointer text-white border border-blue-600 bg-blue-600 hover:bg-blue-700 transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
-            >
-              appointment
-            </Link>
+              // Regular links
+              return (
+                <Link
+                  key={link.path}
+                  to={link.path}
+                  className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
+                    isActive(link.path)
+                      ? 'text-primary-600 bg-primary-50 dark:bg-primary-900/20'
+                      : 'text-gray-600 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 hover:bg-gray-50 dark:hover:bg-gray-700/50'
+                  }`}
+                >
+                  <span className="mr-2">{link.icon}</span>
+                  {link.label}
+                </Link>
+              );
+            })}
+          </nav>
 
+          {/* Right Side Actions */}
+          <div className="hidden md:flex items-center gap-3">
+            {/* Theme Toggle */}
             <button
-              type="button"
-              aria-controls="collapseMenu"
-              aria-expanded={isMenuOpen}
-              aria-haspopup="true"
-              id="toggleOpen"
-              onClick={openMenu}
-              className="cursor-pointer lg:hidden focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 rounded"
+              onClick={toggleTheme}
+              className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+              aria-label="Toggle theme"
             >
-              <span className="sr-only">Open main menu</span>
-              <svg
-                className="size-7 fill-slate-900 dark:fill-slate-50"
-                aria-hidden="true"
-                viewBox="0 0 20 20"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <path
-                  fillRule="evenodd"
-                  d="M3 5a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM3 10a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM3 15a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z"
-                  clipRule="evenodd"
-                ></path>
-              </svg>
+              {theme === 'light' ? '🌙' : '☀️'}
+            </button>
+
+            {/* Auth Buttons */}
+            {isAuthenticated ? (
+              <div className="flex items-center gap-2">
+                <Link to="/dashboard">
+                  <Button variant="outline" size="sm">
+                    Dashboard
+                  </Button>
+                </Link>
+                <Button variant="danger" size="sm" onClick={handleLogout}>
+                  Logout
+                </Button>
+              </div>
+            ) : (
+              <div className="flex items-center gap-2">
+                <Link to="/login">
+                  <Button variant="outline" size="sm">
+                    Login
+                  </Button>
+                </Link>
+                <Link to="/register">
+                  <Button variant="primary" size="sm">
+                    Register
+                  </Button>
+                </Link>
+              </div>
+            )}
+          </div>
+
+          {/* Mobile Menu Button */}
+          <div className="flex items-center gap-2 md:hidden">
+            {/* Theme Toggle - Mobile */}
+            <button
+              onClick={toggleTheme}
+              className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+              aria-label="Toggle theme"
+            >
+              {theme === 'light' ? '🌙' : '☀️'}
+            </button>
+
+            {/* Menu Toggle */}
+            <button
+              className="p-2 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+              onClick={() => setIsMenuOpen(!isMenuOpen)}
+              aria-label="Toggle menu"
+            >
+              <span className="text-2xl">{isMenuOpen ? '✕' : '☰'}</span>
             </button>
           </div>
         </div>
-      </nav>
+
+        {/* Mobile Navigation Menu */}
+        {isMenuOpen && (
+          <div className="md:hidden border-t border-gray-200 dark:border-gray-700 animate-slide-down">
+            <div className="py-4 space-y-2">
+              {navLinks.map((link) => (
+                <Link
+                  key={link.path}
+                  to={link.path}
+                  className={`flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-colors ${
+                    isActive(link.path)
+                      ? 'text-primary-600 bg-primary-50 dark:bg-primary-900/20'
+                      : 'text-gray-600 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 hover:bg-gray-50 dark:hover:bg-gray-700/50'
+                  }`}
+                  onClick={() => setIsMenuOpen(false)}
+                >
+                  <span className="text-xl">{link.icon}</span>
+                  {link.label}
+                </Link>
+              ))}
+
+              {/* Mobile Services Sub-menu */}
+              <div className="px-4 py-2">
+                <p className="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2">
+                  Our Services
+                </p>
+                <div className="grid grid-cols-2 gap-2">
+                  {services.slice(0, 8).map((service) => (
+                    <Link
+                      key={service.path}
+                      to={service.path}
+                      className="flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-medium text-gray-600 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors"
+                      onClick={() => setIsMenuOpen(false)}
+                    >
+                      <span>{service.icon}</span>
+                      {service.label}
+                    </Link>
+                  ))}
+                </div>
+                <Link
+                  to="/services"
+                  className="block text-center mt-2 text-sm text-primary-600 hover:text-primary-700 font-medium"
+                  onClick={() => setIsMenuOpen(false)}
+                >
+                  View All Services →
+                </Link>
+              </div>
+
+              {/* Mobile Auth Actions */}
+              <div className="pt-4 border-t border-gray-200 dark:border-gray-700 space-y-2">
+                {isAuthenticated ? (
+                  <>
+                    <Link
+                      to="/dashboard"
+                      className="flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium text-gray-600 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 hover:bg-gray-50 dark:hover:bg-gray-700/50"
+                      onClick={() => setIsMenuOpen(false)}
+                    >
+                      <span className="text-xl">📊</span>
+                      Dashboard
+                    </Link>
+                    <button
+                      onClick={handleLogout}
+                      className="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium text-danger hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
+                    >
+                      <span className="text-xl">🚪</span>
+                      Logout
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    <button
+                      onClick={handleLogin}
+                      className="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium text-gray-600 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors"
+                    >
+                      <span className="text-xl">🔑</span>
+                      Login
+                    </button>
+                    <Link
+                      to="/register"
+                      className="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium text-primary-600 bg-primary-50 dark:bg-primary-900/20 hover:bg-primary-100 dark:hover:bg-primary-900/30 transition-colors"
+                      onClick={() => setIsMenuOpen(false)}
+                    >
+                      <span className="text-xl">📝</span>
+                      Register
+                    </Link>
+                  </>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
     </header>
   );
-}
+};
+
+export default Navbar;
