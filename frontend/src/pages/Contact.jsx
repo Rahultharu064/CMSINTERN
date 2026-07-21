@@ -25,20 +25,22 @@ const Contact = () => {
   ];
 
   return (
-    <div className="container-custom py-12 animate-fade-in-up">
-      <div className="max-w-4xl mx-auto">
-        <h1 className="text-4xl font-bold text-gray-900 dark:text-white mb-6 text-center">
-          Contact Us
-        </h1>
-        <p className="text-lg text-gray-600 dark:text-gray-400 text-center mb-8">
-          Have questions? We'd love to hear from you. Send us a message and we'll respond as soon as possible.
-        </p>
+    <div className="container-custom py-16 animate-fade-in-up sm:py-20 lg:py-24">
+      <div className="mx-auto max-w-5xl">
+        <div className="mx-auto mb-10 max-w-3xl text-center">
+          <p className="text-sm font-semibold uppercase tracking-[0.3em] text-primary-600">Contact us</p>
+          <h1 className="mt-3 text-3xl font-bold tracking-tight text-slate-900 sm:text-4xl">
+            We’re here to help.
+          </h1>
+          <p className="mt-4 text-lg text-slate-600">
+            Have questions? We’d love to hear from you. Send us a message and we’ll respond as soon as possible.
+          </p>
+        </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-          {/* Contact Form */}
-          <Card className="p-8">
-            <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-4">
-              Send a Message
+        <div className="grid gap-8 lg:grid-cols-[1.05fr_0.95fr]">
+          <Card className="border-0 bg-white/90 p-8 shadow-[0_20px_45px_rgba(15,23,42,0.08)]">
+            <h3 className="mb-5 text-xl font-bold text-slate-900">
+              Send a message
             </h3>
             <form onSubmit={handleSubmit} className="space-y-4">
               <Input
@@ -64,7 +66,7 @@ const Contact = () => {
                 required
               />
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
+                <label className="mb-1.5 block text-sm font-medium text-slate-700">
                   Message <span className="text-danger">*</span>
                 </label>
                 <textarea
@@ -82,42 +84,39 @@ const Contact = () => {
             </form>
           </Card>
 
-          {/* Contact Information */}
-          <div>
-            <Card className="p-8 mb-6">
-              <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-4">
-                Contact Information
+          <div className="space-y-6">
+            <Card className="border-0 bg-white/90 p-8 shadow-[0_20px_45px_rgba(15,23,42,0.08)]">
+              <h3 className="mb-5 text-xl font-bold text-slate-900">
+                Contact information
               </h3>
               <div className="space-y-4">
                 {contactInfo.map((info, index) => (
-                  <div key={index} className="flex items-start gap-3">
+                  <div key={index} className="flex items-start gap-3 rounded-2xl bg-slate-50 p-3">
                     <span className="text-2xl">{info.icon}</span>
                     <div>
-                      <p className="font-medium text-gray-900 dark:text-white">
-                        {info.title}
-                      </p>
-                      <p className="text-gray-600 dark:text-gray-400">{info.details}</p>
+                      <p className="font-medium text-slate-900">{info.title}</p>
+                      <p className="text-sm text-slate-600">{info.details}</p>
                     </div>
                   </div>
                 ))}
               </div>
             </Card>
 
-            <Card className="p-8">
-              <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-4">
-                Follow Us
+            <Card className="border-0 bg-white/90 p-8 shadow-[0_20px_45px_rgba(15,23,42,0.08)]">
+              <h3 className="mb-5 text-xl font-bold text-slate-900">
+                Follow us
               </h3>
               <div className="flex gap-4">
-                <a href="#" className="text-3xl hover:scale-110 transition-transform" aria-label="Facebook">
+                <a href="#" className="text-3xl transition-transform hover:scale-110" aria-label="Facebook">
                   📘
                 </a>
-                <a href="#" className="text-3xl hover:scale-110 transition-transform" aria-label="Twitter">
+                <a href="#" className="text-3xl transition-transform hover:scale-110" aria-label="Twitter">
                   🐦
                 </a>
-                <a href="#" className="text-3xl hover:scale-110 transition-transform" aria-label="Instagram">
+                <a href="#" className="text-3xl transition-transform hover:scale-110" aria-label="Instagram">
                   📸
                 </a>
-                <a href="#" className="text-3xl hover:scale-110 transition-transform" aria-label="LinkedIn">
+                <a href="#" className="text-3xl transition-transform hover:scale-110" aria-label="LinkedIn">
                   💼
                 </a>
               </div>

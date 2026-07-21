@@ -139,30 +139,30 @@ const Navbar = () => {
 
   return (
     <header 
-      className={`sticky top-0 z-sticky transition-all duration-300 ${
+      className={`site-header border-b transition-all duration-300 ${
         isScrolled 
-          ? 'bg-white/95 dark:bg-gray-800/95 backdrop-blur-md shadow-lg' 
-          : 'bg-white dark:bg-gray-800 shadow-sm'
+          ? 'border-slate-200/70 bg-white/85 shadow-[0_12px_40px_rgba(15,23,42,0.08)] dark:border-slate-700/80 dark:bg-slate-900/85' 
+          : 'border-transparent bg-white/90 dark:bg-slate-900/90'
       }`}
     >
       <div className="container-custom">
-        <div className="flex-between py-4">
+        <div className="flex-between py-3.5 sm:py-4">
           {/* Logo */}
           <Link 
             to="/" 
-            className="flex items-center gap-2 group"
+            className="flex items-center gap-3 group"
             onClick={() => setIsMenuOpen(false)}
           >
-            <span className="text-3xl group-hover:scale-110 transition-transform duration-300">
+            <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-gradient-to-br from-primary-600 to-primary-700 text-2xl text-white shadow-lg shadow-primary-500/20 transition-transform duration-300 group-hover:scale-105">
               🏥
             </span>
-            <span className="text-xl font-bold text-gray-900 dark:text-white">
-              Clinic<span className="text-primary-600">MS</span>
+            <span className="text-lg font-semibold tracking-tight text-slate-900 sm:text-xl dark:text-white">
+              Clinic<span className="ml-1 text-primary-600">MS</span>
             </span>
           </Link>
 
           {/* Desktop Navigation */}
-          <nav className="hidden md:flex items-center gap-1">
+          <nav className="hidden md:flex items-center gap-1 rounded-full border border-slate-200/80 bg-slate-50/70 p-1 shadow-sm dark:border-slate-700/70 dark:bg-slate-800/70">
             {navLinks.map((link) => {
               // Special handling for Services link with dropdown
               if (link.path === '/services') {
@@ -171,10 +171,10 @@ const Navbar = () => {
                     <button
                       onClick={() => setIsServicesDropdownOpen(!isServicesDropdownOpen)}
                       onMouseEnter={() => setIsServicesDropdownOpen(true)}
-                      className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 flex items-center gap-2 ${
+                      className={`flex items-center gap-2 rounded-full px-4 py-2 text-sm font-medium transition-all duration-200 ${
                         location.pathname.startsWith('/services')
-                          ? 'text-primary-600 bg-primary-50 dark:bg-primary-900/20'
-                          : 'text-gray-600 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 hover:bg-gray-50 dark:hover:bg-gray-700/50'
+                          ? 'bg-primary-600 text-white shadow-sm'
+                          : 'text-slate-600 hover:bg-white hover:text-primary-600 dark:text-slate-300 dark:hover:bg-slate-700 dark:hover:text-primary-400'
                       }`}
                       aria-expanded={isServicesDropdownOpen}
                       aria-haspopup="true"
@@ -246,10 +246,10 @@ const Navbar = () => {
                 <Link
                   key={link.path}
                   to={link.path}
-                  className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
+                  className={`rounded-full px-4 py-2 text-sm font-medium transition-all duration-200 ${
                     isActive(link.path)
-                      ? 'text-primary-600 bg-primary-50 dark:bg-primary-900/20'
-                      : 'text-gray-600 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 hover:bg-gray-50 dark:hover:bg-gray-700/50'
+                      ? 'bg-primary-600 text-white shadow-sm'
+                      : 'text-slate-600 hover:bg-white hover:text-primary-600 dark:text-slate-300 dark:hover:bg-slate-700 dark:hover:text-primary-400'
                   }`}
                 >
                   <span className="mr-2">{link.icon}</span>
@@ -264,7 +264,7 @@ const Navbar = () => {
             {/* Theme Toggle */}
             <button
               onClick={toggleTheme}
-              className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+              className="flex h-10 w-10 items-center justify-center rounded-full border border-slate-200 bg-white text-lg shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:border-primary-200 hover:bg-primary-50 dark:border-slate-700 dark:bg-slate-800 dark:hover:border-primary-500 dark:hover:bg-slate-700"
               aria-label="Toggle theme"
             >
               {theme === 'light' ? '🌙' : '☀️'}
@@ -274,23 +274,23 @@ const Navbar = () => {
             {isAuthenticated ? (
               <div className="flex items-center gap-2">
                 <Link to="/dashboard">
-                  <Button variant="outline" size="sm">
+                  <Button variant="outline" size="sm" className="rounded-full">
                     Dashboard
                   </Button>
                 </Link>
-                <Button variant="danger" size="sm" onClick={handleLogout}>
+                <Button variant="danger" size="sm" className="rounded-full" onClick={handleLogout}>
                   Logout
                 </Button>
               </div>
             ) : (
               <div className="flex items-center gap-2">
                 <Link to="/login">
-                  <Button variant="outline" size="sm">
+                  <Button variant="outline" size="sm" className="rounded-full">
                     Login
                   </Button>
                 </Link>
                 <Link to="/register">
-                  <Button variant="primary" size="sm">
+                  <Button variant="primary" size="sm" className="rounded-full">
                     Register
                   </Button>
                 </Link>
@@ -303,7 +303,7 @@ const Navbar = () => {
             {/* Theme Toggle - Mobile */}
             <button
               onClick={toggleTheme}
-              className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+              className="flex h-10 w-10 items-center justify-center rounded-full border border-slate-200 bg-white text-lg shadow-sm transition-all duration-200 hover:border-primary-200 hover:bg-primary-50 dark:border-slate-700 dark:bg-slate-800 dark:hover:border-primary-500 dark:hover:bg-slate-700"
               aria-label="Toggle theme"
             >
               {theme === 'light' ? '🌙' : '☀️'}
@@ -311,7 +311,7 @@ const Navbar = () => {
 
             {/* Menu Toggle */}
             <button
-              className="p-2 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+              className="flex h-10 w-10 items-center justify-center rounded-full border border-slate-200 bg-white text-gray-700 shadow-sm transition-all duration-200 hover:border-primary-200 hover:bg-primary-50 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300 dark:hover:border-primary-500 dark:hover:bg-slate-700"
               onClick={() => setIsMenuOpen(!isMenuOpen)}
               aria-label="Toggle menu"
             >
@@ -322,16 +322,16 @@ const Navbar = () => {
 
         {/* Mobile Navigation Menu */}
         {isMenuOpen && (
-          <div className="md:hidden border-t border-gray-200 dark:border-gray-700 animate-slide-down">
-            <div className="py-4 space-y-2">
+          <div className="animate-slide-down border-t border-slate-200/80 bg-white/95 py-2 shadow-[0_8px_30px_rgba(15,23,42,0.06)] backdrop-blur md:hidden dark:border-slate-700/80 dark:bg-slate-900/95">
+            <div className="space-y-2 px-1 py-2">
               {navLinks.map((link) => (
                 <Link
                   key={link.path}
                   to={link.path}
-                  className={`flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-colors ${
+                  className={`flex items-center gap-3 rounded-2xl px-4 py-3 text-sm font-medium transition-colors ${
                     isActive(link.path)
-                      ? 'text-primary-600 bg-primary-50 dark:bg-primary-900/20'
-                      : 'text-gray-600 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 hover:bg-gray-50 dark:hover:bg-gray-700/50'
+                      ? 'bg-primary-50 text-primary-700 dark:bg-primary-900/20 dark:text-primary-300'
+                      : 'text-slate-600 hover:bg-slate-50 hover:text-primary-600 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-primary-400'
                   }`}
                   onClick={() => setIsMenuOpen(false)}
                 >
@@ -341,8 +341,8 @@ const Navbar = () => {
               ))}
 
               {/* Mobile Services Sub-menu */}
-              <div className="px-4 py-2">
-                <p className="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2">
+              <div className="rounded-2xl bg-slate-50/80 px-4 py-3 dark:bg-slate-800/50">
+                <p className="mb-2 text-xs uppercase tracking-[0.25em] text-slate-500 dark:text-slate-400">
                   Our Services
                 </p>
                 <div className="grid grid-cols-2 gap-2">
@@ -350,7 +350,7 @@ const Navbar = () => {
                     <Link
                       key={service.path}
                       to={service.path}
-                      className="flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-medium text-gray-600 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors"
+                      className="flex items-center gap-2 rounded-xl px-3 py-2 text-xs font-medium text-slate-600 transition-colors hover:bg-white hover:text-primary-600 dark:text-slate-300 dark:hover:bg-slate-700 dark:hover:text-primary-400"
                       onClick={() => setIsMenuOpen(false)}
                     >
                       <span>{service.icon}</span>
@@ -360,7 +360,7 @@ const Navbar = () => {
                 </div>
                 <Link
                   to="/services"
-                  className="block text-center mt-2 text-sm text-primary-600 hover:text-primary-700 font-medium"
+                  className="mt-2 block text-center text-sm font-medium text-primary-600 hover:text-primary-700"
                   onClick={() => setIsMenuOpen(false)}
                 >
                   View All Services →
@@ -368,12 +368,12 @@ const Navbar = () => {
               </div>
 
               {/* Mobile Auth Actions */}
-              <div className="pt-4 border-t border-gray-200 dark:border-gray-700 space-y-2">
+              <div className="space-y-2 border-t border-slate-200/80 px-1 pt-4 dark:border-slate-700/80">
                 {isAuthenticated ? (
                   <>
                     <Link
                       to="/dashboard"
-                      className="flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium text-gray-600 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 hover:bg-gray-50 dark:hover:bg-gray-700/50"
+                      className="flex items-center gap-3 rounded-2xl px-4 py-3 text-sm font-medium text-slate-600 transition-colors hover:bg-slate-50 hover:text-primary-600 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-primary-400"
                       onClick={() => setIsMenuOpen(false)}
                     >
                       <span className="text-xl">📊</span>
@@ -381,7 +381,7 @@ const Navbar = () => {
                     </Link>
                     <button
                       onClick={handleLogout}
-                      className="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium text-danger hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
+                      className="flex w-full items-center gap-3 rounded-2xl px-4 py-3 text-sm font-medium text-danger transition-colors hover:bg-red-50 dark:hover:bg-red-900/20"
                     >
                       <span className="text-xl">🚪</span>
                       Logout
@@ -391,14 +391,14 @@ const Navbar = () => {
                   <>
                     <button
                       onClick={handleLogin}
-                      className="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium text-gray-600 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors"
+                      className="flex w-full items-center gap-3 rounded-2xl px-4 py-3 text-sm font-medium text-slate-600 transition-colors hover:bg-slate-50 hover:text-primary-600 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-primary-400"
                     >
                       <span className="text-xl">🔑</span>
                       Login
                     </button>
                     <Link
                       to="/register"
-                      className="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium text-primary-600 bg-primary-50 dark:bg-primary-900/20 hover:bg-primary-100 dark:hover:bg-primary-900/30 transition-colors"
+                      className="flex w-full items-center gap-3 rounded-2xl bg-primary-50 px-4 py-3 text-sm font-medium text-primary-700 transition-colors hover:bg-primary-100 dark:bg-primary-900/20 dark:text-primary-300 dark:hover:bg-primary-900/30"
                       onClick={() => setIsMenuOpen(false)}
                     >
                       <span className="text-xl">📝</span>
