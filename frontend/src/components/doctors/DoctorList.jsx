@@ -1,10 +1,10 @@
 import React, { useState, useMemo, useEffect } from 'react';
+import { SearchX, ChevronLeft, ChevronRight } from 'lucide-react';
 import DoctorCard from './DoctorCard';
-import LoadingSpinner from '../ui/LoadingSpinner';
 import { doctorsData } from '../../utils/dummyData';
 
 const DoctorsList = ({ searchQuery, filters }) => {
-  const [loading, setLoading] = useState(false);
+  const [loading] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 6;
 
@@ -58,19 +58,36 @@ const DoctorsList = ({ searchQuery, filters }) => {
 
   if (loading) {
     return (
-      <div className="card p-12">
-        <LoadingSpinner size="lg" text="Loading doctors..." />
+      <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+        {Array.from({ length: 4 }).map((_, i) => (
+          <div key={i} className="card card--flat">
+            <div className="flex items-start gap-4">
+              <div className="skeleton skeleton-circle" style={{ width: '5rem', height: '5rem', borderRadius: '1rem' }} />
+              <div className="flex-1 space-y-2 pt-1">
+                <div className="skeleton skeleton-text" style={{ width: '60%' }} />
+                <div className="skeleton skeleton-text" style={{ width: '40%' }} />
+              </div>
+            </div>
+            <div className="mt-4 grid grid-cols-2 gap-2">
+              {Array.from({ length: 4 }).map((_, j) => (
+                <div key={j} className="skeleton skeleton-text" />
+              ))}
+            </div>
+          </div>
+        ))}
       </div>
     );
   }
 
   if (filteredDoctors.length === 0) {
     return (
-      <div className="card p-12 text-center">
-        <div className="text-6xl mb-4">🔍</div>
-        <h3 className="text-xl font-semibold text-gray-700 mb-2">No Doctors Found</h3>
-        <p className="text-gray-500 max-w-md mx-auto">
-          Try adjusting your search or filters to find what you're looking for.
+      <div className="card card--flat p-12 text-center">
+        <span className="icon-chip mx-auto mb-4 h-14 w-14">
+          <SearchX className="h-7 w-7" />
+        </span>
+        <h3 className="mb-2 text-xl font-semibold text-slate-800 dark:text-white">No doctors found</h3>
+        <p className="mx-auto max-w-md text-slate-500 dark:text-slate-400">
+          Try adjusting your search or filters to find the right specialist for you.
         </p>
       </div>
     );
@@ -79,12 +96,12 @@ const DoctorsList = ({ searchQuery, filters }) => {
   return (
     <div>
       <div className="flex-between mb-4 flex-wrap gap-2">
-        <p className="text-sm text-gray-600">
-          Showing <span className="font-semibold">{paginatedDoctors.length}</span> of{' '}
-          <span className="font-semibold">{filteredDoctors.length}</span> doctors
+        <p className="text-sm text-slate-600 dark:text-slate-400">
+          Showing <span className="font-semibold text-slate-900 dark:text-white">{paginatedDoctors.length}</span> of{' '}
+          <span className="font-semibold text-slate-900 dark:text-white">{filteredDoctors.length}</span> doctors
         </p>
         {filteredDoctors.length > itemsPerPage && (
-          <p className="text-sm text-gray-500">
+          <p className="text-sm text-slate-500 dark:text-slate-400">
             Page {currentPage} of {totalPages}
           </p>
         )}
@@ -103,9 +120,9 @@ const DoctorsList = ({ searchQuery, filters }) => {
             disabled={currentPage === 1}
             className="btn btn-secondary btn-sm"
           >
-            Previous
+            <ChevronLeft className="h-4 w-4" /> Previous
           </button>
-          
+
           <div className="flex gap-1">
             {Array.from({ length: Math.min(totalPages, 5) }, (_, i) => {
               let pageNum;
@@ -135,7 +152,7 @@ const DoctorsList = ({ searchQuery, filters }) => {
             disabled={currentPage === totalPages}
             className="btn btn-secondary btn-sm"
           >
-            Next
+            Next <ChevronRight className="h-4 w-4" />
           </button>
         </div>
       )}
