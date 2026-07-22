@@ -10,30 +10,31 @@ const HeroSection = () => {
   ];
 
   const trustPoints = [
-    { label: 'Verified doctors', value: '98%' },
+    { label: 'Verified specialists', value: '98%' },
     { label: 'Patient satisfaction', value: '4.9/5' },
-    { label: 'Care coverage', value: '50+' },
-    { label: 'Appointments', value: '1000+' },
+    { label: 'Coverage options', value: '50+' },
+    { label: 'Appointments booked', value: '1000+' },
   ];
 
   return (
-    <section className="relative overflow-hidden bg-[radial-gradient(circle_at_top_left,_rgba(255,255,255,0.3),_transparent_40%),linear-gradient(135deg,_#0f172a_0%,_#1d4ed8_45%,_#2563eb_100%)]">
-      <div className="absolute inset-0 bg-[url('/src/assets/images/pattern.svg')] opacity-10" />
-      <div className="absolute inset-0 bg-gradient-to-br from-white/10 via-transparent to-transparent" />
+    <section className="relative isolate overflow-hidden bg-[radial-gradient(circle_at_top_left,_rgba(147,197,253,0.2),_transparent_30%),linear-gradient(135deg,_#0f172a_0%,_#1d4ed8_42%,_#38bdf8_100%)]">
+      <div className="absolute inset-0 bg-[linear-gradient(120deg,rgba(255,255,255,0.28),transparent_40%,rgba(255,255,255,0.12)_70%,transparent)]" />
+      <div className="absolute -top-24 -right-10 h-72 w-72 rounded-full bg-white/10 blur-3xl" />
+      <div className="absolute bottom-0 left-0 h-56 w-56 rounded-full bg-cyan-400/10 blur-3xl" />
 
       <div className="container-custom relative py-20 lg:py-24">
         <div className="grid items-center gap-10 lg:grid-cols-[1.1fr_0.9fr]">
           <div className="max-w-2xl">
-            <div className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-4 py-2 text-sm font-medium text-white/90 backdrop-blur-sm">
+            <div className="soft-chip w-fit">
               <span className="text-base">🏥</span>
               Trusted healthcare platform for modern clinics
             </div>
 
             <h1 className="mt-6 text-4xl font-bold tracking-tight text-white sm:text-5xl lg:text-6xl">
-              Discover world-class care with confidence.
+              Feel confident about your care, every step of the way.
             </h1>
             <p className="mt-5 text-lg leading-8 text-slate-100 sm:text-xl">
-              Connect with highly rated specialists, book appointments instantly, and experience healthcare designed around your needs.
+              Discover highly rated specialists, book appointments in minutes, and experience a smoother, more personal healthcare journey.
             </p>
 
             <div className="mt-8 flex flex-wrap gap-3">
@@ -58,18 +59,18 @@ const HeroSection = () => {
             </div>
           </div>
 
-          <div className="rounded-[28px] border border-white/30 bg-white/90 p-6 shadow-2xl shadow-slate-950/20 backdrop-blur-xl">
-            <div className="flex items-center justify-between rounded-2xl border border-slate-100 bg-slate-50 px-4 py-3">
+          <div className="glass-panel rounded-[28px] p-6">
+            <div className="flex items-center justify-between rounded-2xl border border-slate-100 bg-slate-50/90 px-4 py-3">
               <div>
                 <p className="text-sm font-semibold text-slate-900">24/7 patient support</p>
-                <p className="text-sm text-slate-600">From booking to follow-up care</p>
+                <p className="text-sm text-slate-600">From booking through follow-up care</p>
               </div>
               <span className="text-2xl">💬</span>
             </div>
 
             <div className="mt-6 grid gap-4 sm:grid-cols-2">
               {trustPoints.map((item) => (
-                <div key={item.label} className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+                <div key={item.label} className="rounded-2xl border border-slate-200 bg-white/95 p-4 shadow-sm">
                   <p className="text-2xl font-semibold text-slate-900">{item.value}</p>
                   <p className="mt-1 text-sm text-slate-600">{item.label}</p>
                 </div>

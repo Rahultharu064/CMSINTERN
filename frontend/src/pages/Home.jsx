@@ -28,6 +28,21 @@ const Home = () => {
     },
   ];
 
+  const steps = [
+    {
+      title: 'Choose your specialist',
+      description: 'Explore verified doctors by specialty, location, and availability.',
+    },
+    {
+      title: 'Book in minutes',
+      description: 'Select a time that works for you and confirm your visit instantly.',
+    },
+    {
+      title: 'Receive attentive care',
+      description: 'Meet your care team with transparent follow-ups and ongoing support.',
+    },
+  ];
+
   const stats = [
     { value: '500+', label: 'Doctors' },
     { value: '50+', label: 'Specialties' },
@@ -41,18 +56,18 @@ const Home = () => {
 
       <div className="container-custom py-16 lg:py-20">
         <div className="mx-auto max-w-3xl text-center">
-          <p className="text-sm font-semibold uppercase tracking-[0.3em] text-primary-600">Why choose us</p>
-          <h2 className="mt-3 text-3xl font-bold tracking-tight text-slate-900 sm:text-4xl">
+          <p className="section-kicker">Why choose us</p>
+          <h2 className="section-title">
             Thoughtful care for every step of your health journey.
           </h2>
-          <p className="mt-4 text-lg text-slate-600">
+          <p className="section-copy">
             We combine medical excellence with a smooth digital experience so every appointment feels effortless.
           </p>
         </div>
 
         <div className="mt-10 grid gap-6 md:grid-cols-2 xl:grid-cols-4">
-          {features.map((feature, index) => (
-            <Card key={feature.title} className="text-left" hoverable>
+          {features.map((feature) => (
+            <Card key={feature.title} className="text-left rounded-[24px] border border-slate-200/70 bg-white/85" hoverable>
               <div className="mb-4 inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-primary-50 text-2xl">
                 {feature.icon}
               </div>
@@ -60,6 +75,53 @@ const Home = () => {
               <p className="mt-2 text-sm leading-7 text-slate-600">{feature.description}</p>
             </Card>
           ))}
+        </div>
+
+        <div className="mt-16 grid gap-6 lg:grid-cols-[1.05fr_0.95fr]">
+          <div className="section-shell p-8 lg:p-10">
+            <p className="section-kicker">How it works</p>
+            <h3 className="mt-3 text-3xl font-semibold tracking-tight text-slate-900">A smoother path to better care.</h3>
+            <p className="mt-4 text-lg text-slate-600">
+              From booking to follow-up, every step is designed to feel effortless and clear.
+            </p>
+
+            <div className="mt-8 space-y-4">
+              {steps.map((step, index) => (
+                <div key={step.title} className="flex gap-4 rounded-2xl border border-slate-200 bg-white/70 p-4">
+                  <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-primary-600 text-sm font-semibold text-white">
+                    0{index + 1}
+                  </div>
+                  <div>
+                    <h4 className="font-semibold text-slate-900">{step.title}</h4>
+                    <p className="mt-1 text-sm leading-7 text-slate-600">{step.description}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className="section-shell p-8 lg:p-10">
+            <p className="section-kicker">Patient-first experience</p>
+            <h3 className="mt-3 text-3xl font-semibold tracking-tight text-slate-900">Care that feels personal, proactive, and reassuring.</h3>
+
+            <div className="mt-8 rounded-[24px] border border-primary-100 bg-gradient-to-br from-primary-50 to-sky-50 p-6">
+              <p className="text-sm font-semibold uppercase tracking-[0.25em] text-primary-700">What patients love</p>
+              <ul className="mt-4 space-y-3 text-slate-700">
+                <li className="flex items-start gap-3">
+                  <span className="mt-1 text-xl text-primary-600">✓</span>
+                  <span>Transparent physician profiles and treatment guidance.</span>
+                </li>
+                <li className="flex items-start gap-3">
+                  <span className="mt-1 text-xl text-primary-600">✓</span>
+                  <span>Flexible telehealth and in-person visits built around your routine.</span>
+                </li>
+                <li className="flex items-start gap-3">
+                  <span className="mt-1 text-xl text-primary-600">✓</span>
+                  <span>Dependable follow-up and support from booking through recovery.</span>
+                </li>
+              </ul>
+            </div>
+          </div>
         </div>
 
         <div className="mt-16 grid gap-8 lg:grid-cols-[1.05fr_0.95fr]">
@@ -77,7 +139,7 @@ const Home = () => {
           </Card>
 
           <Card className="p-8">
-            <p className="text-sm font-semibold uppercase tracking-[0.3em] text-primary-600">What sets us apart</p>
+            <p className="section-kicker">What sets us apart</p>
             <ul className="mt-6 space-y-4 text-slate-700">
               <li className="flex items-start gap-3">
                 <span className="mt-1 text-xl text-primary-600">✓</span>

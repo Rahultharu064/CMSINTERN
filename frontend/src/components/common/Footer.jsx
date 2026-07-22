@@ -36,122 +36,115 @@ const Footer = () => {
 
   return (
     <footer className="mt-16 border-t border-slate-200 bg-slate-950 text-white">
-      {/* Main Footer */}
-      <div className="container-custom pt-12 pb-8">
-        <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-4">
-          {/* About Section */}
-          <div>
-            <h3 className="mb-4 flex items-center gap-2 text-lg font-semibold">
-              <span className="text-2xl">🏥</span> ClinicMS
-            </h3>
-            <p className="text-sm leading-relaxed text-slate-400">
-              Your trusted healthcare partner in Nepal. Book appointments with the best doctors and receive quality medical care at affordable prices.
-            </p>
-            <div className="mt-4 flex gap-3">
-              {socialLinks.map((social) => (
-                <a
-                  key={social.name}
-                  href={social.url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-2xl transition-transform duration-300 hover:scale-110 hover:text-primary-400"
-                  aria-label={social.name}
-                >
-                  {social.icon}
-                </a>
-              ))}
-            </div>
-          </div>
-
-          {/* Quick Links */}
-          <div>
-            <h4 className="mb-4 text-sm font-semibold uppercase tracking-wider text-slate-300">
-              Quick Links
-            </h4>
-            <ul className="space-y-2.5">
-              {quickLinks.map((link) => (
-                <li key={link.path}>
-                  <Link
-                    to={link.path}
-                    className="flex items-center gap-2 text-sm text-slate-400 transition-colors duration-200 hover:text-white"
-                  >
-                    <span className="text-primary-400">›</span>
-                    {link.label}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          {/* Payment Methods */}
-          <div>
-            <h4 className="mb-4 text-sm font-semibold uppercase tracking-wider text-slate-300">
-              Payment Methods
-            </h4>
-            <ul className="space-y-2.5">
-              {paymentMethods.map((method) => (
-                <li key={method.name} className="flex items-center gap-3 text-sm text-slate-400">
-                  <span className="text-xl">{method.icon}</span>
-                  {method.name}
-                </li>
-              ))}
-            </ul>
-            <div className="mt-4 rounded-lg border border-slate-800 bg-slate-900/70 p-3">
-              <p className="text-xs text-slate-400">
-                🔒 Secure payments with industry-standard encryption
+      <div className="container-custom py-12 lg:py-14">
+        <div className="rounded-[32px] border border-white/10 bg-white/5 p-8 shadow-[0_20px_80px_rgba(2,6,23,0.35)] backdrop-blur-xl">
+          <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-4">
+            <div>
+              <h3 className="mb-4 flex items-center gap-2 text-lg font-semibold">
+                <span className="text-2xl">🏥</span> ClinicMS
+              </h3>
+              <p className="text-sm leading-relaxed text-slate-400">
+                Your trusted healthcare partner in Nepal. Book appointments with the best doctors and receive quality medical care at affordable prices.
               </p>
-            </div>
-          </div>
-
-          {/* Contact Info */}
-          <div>
-            <h4 className="mb-4 text-sm font-semibold uppercase tracking-wider text-slate-300">
-              Contact Us
-            </h4>
-            <ul className="space-y-3">
-              {contactInfo.map((info, index) => (
-                <li key={index} className="flex items-start gap-3 text-sm text-slate-400">
-                  <span className="flex-shrink-0 text-xl">{info.icon}</span>
-                  <span>{info.text}</span>
-                </li>
-              ))}
-            </ul>
-            <div className="mt-4">
-              <Link
-                to="/contact"
-                className="inline-flex items-center gap-2 text-sm font-medium text-primary-400 transition-colors hover:text-primary-300"
-              >
-                Get in Touch →
-              </Link>
-            </div>
-          </div>
-        </div>
-
-        {/* Newsletter Subscription */}
-        <div className="mt-8 border-t border-slate-800 pt-8">
-          <div className="flex flex-col items-center justify-between gap-4 md:flex-row">
-            <div className="flex items-center gap-3">
-              <span className="text-2xl">📬</span>
-              <div>
-                <p className="text-sm font-medium text-white">Subscribe to our newsletter</p>
-                <p className="text-xs text-slate-400">Get health tips and updates</p>
+              <div className="mt-4 flex gap-3">
+                {socialLinks.map((social) => (
+                  <a
+                    key={social.name}
+                    href={social.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-2xl transition-transform duration-300 hover:scale-110 hover:text-primary-400"
+                    aria-label={social.name}
+                  >
+                    {social.icon}
+                  </a>
+                ))}
               </div>
             </div>
-            <form className="flex w-full gap-2 md:w-auto">
-              <input
-                type="email"
-                placeholder="Enter your email"
-                className="input input-sm flex-1 border-slate-700 bg-slate-900 text-white placeholder-slate-400 focus:border-primary-500 md:w-64"
-              />
-              <button type="submit" className="btn btn-primary btn-sm whitespace-nowrap">
-                Subscribe
-              </button>
-            </form>
+
+            <div>
+              <h4 className="mb-4 text-sm font-semibold uppercase tracking-wider text-slate-300">
+                Quick Links
+              </h4>
+              <ul className="space-y-2.5">
+                {quickLinks.map((link) => (
+                  <li key={link.path}>
+                    <Link
+                      to={link.path}
+                      className="flex items-center gap-2 text-sm text-slate-400 transition-colors duration-200 hover:text-white"
+                    >
+                      <span className="text-primary-400">›</span>
+                      {link.label}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            <div>
+              <h4 className="mb-4 text-sm font-semibold uppercase tracking-wider text-slate-300">
+                Payment Methods
+              </h4>
+              <ul className="space-y-2.5">
+                {paymentMethods.map((method) => (
+                  <li key={method.name} className="flex items-center gap-3 text-sm text-slate-400">
+                    <span className="text-xl">{method.icon}</span>
+                    {method.name}
+                  </li>
+                ))}
+              </ul>
+              <div className="mt-4 rounded-lg border border-slate-800 bg-slate-900/70 p-3">
+                <p className="text-xs text-slate-400">🔒 Secure payments with industry-standard encryption</p>
+              </div>
+            </div>
+
+            <div>
+              <h4 className="mb-4 text-sm font-semibold uppercase tracking-wider text-slate-300">
+                Contact Us
+              </h4>
+              <ul className="space-y-3">
+                {contactInfo.map((info, index) => (
+                  <li key={index} className="flex items-start gap-3 text-sm text-slate-400">
+                    <span className="flex-shrink-0 text-xl">{info.icon}</span>
+                    <span>{info.text}</span>
+                  </li>
+                ))}
+              </ul>
+              <div className="mt-4">
+                <Link
+                  to="/contact"
+                  className="inline-flex items-center gap-2 text-sm font-medium text-primary-400 transition-colors hover:text-primary-300"
+                >
+                  Get in Touch →
+                </Link>
+              </div>
+            </div>
+          </div>
+
+          <div className="mt-8 border-t border-slate-800 pt-8">
+            <div className="flex flex-col items-center justify-between gap-4 md:flex-row">
+              <div className="flex items-center gap-3">
+                <span className="text-2xl">📬</span>
+                <div>
+                  <p className="text-sm font-medium text-white">Subscribe to our newsletter</p>
+                  <p className="text-xs text-slate-400">Get health tips and updates</p>
+                </div>
+              </div>
+              <form className="flex w-full gap-2 md:w-auto">
+                <input
+                  type="email"
+                  placeholder="Enter your email"
+                  className="input input-sm flex-1 border-slate-700 bg-slate-900 text-white placeholder-slate-400 focus:border-primary-500 md:w-64"
+                />
+                <button type="submit" className="btn btn-primary btn-sm whitespace-nowrap">
+                  Subscribe
+                </button>
+              </form>
+            </div>
           </div>
         </div>
       </div>
 
-      {/* Bottom Bar */}
       <div className="border-t border-slate-800">
         <div className="container-custom py-4">
           <div className="flex flex-col items-center justify-between gap-4 text-sm md:flex-row">

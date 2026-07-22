@@ -147,6 +147,27 @@ body {
   background: linear-gradient(135deg, #f8fbff 0%, #f5f9ff 45%, #eef4ff 100%);
   min-height: 100vh;
   overflow-x: hidden;
+  position: relative;
+}
+
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background:
+    radial-gradient(circle at top left, rgba(37, 99, 235, 0.16), transparent 26%),
+    radial-gradient(circle at 85% 10%, rgba(56, 189, 248, 0.16), transparent 24%);
+  pointer-events: none;
+  z-index: -2;
+}
+
+body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background: linear-gradient(120deg, rgba(255,255,255,0.58), transparent 55%, rgba(255,255,255,0.22));
+  pointer-events: none;
+  z-index: -1;
 }
 
 #root {
@@ -256,6 +277,58 @@ a:hover { color: var(--color-primary-700); }
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
+}
+
+.section-kicker {
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: var(--color-primary-600);
+}
+
+.section-title {
+  margin-top: 0.75rem;
+  font-size: clamp(1.8rem, 3vw, 2.6rem);
+  font-weight: 700;
+  line-height: 1.2;
+  letter-spacing: -0.02em;
+  color: var(--color-gray-900);
+}
+
+.section-copy {
+  margin-top: 1rem;
+  font-size: 1.05rem;
+  line-height: 1.8;
+  color: var(--color-gray-600);
+}
+
+.section-shell {
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  border-radius: 1.75rem;
+  background: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(18px);
+  box-shadow: 0 20px 60px rgba(15, 23, 42, 0.08);
+}
+
+.glass-panel {
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(18px);
+  box-shadow: 0 14px 40px rgba(15, 23, 42, 0.08);
+}
+
+.soft-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  border-radius: 9999px;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  background: rgba(255, 255, 255, 0.14);
+  padding: 0.6rem 0.9rem;
+  font-size: 0.9rem;
+  color: rgba(255, 255, 255, 0.92);
+  backdrop-filter: blur(10px);
 }
 
 /* Flex Utilities */
@@ -666,14 +739,6 @@ a:hover { color: var(--color-primary-700); }
   top: 0;
   z-index: var(--z-sticky);
   backdrop-filter: blur(18px);
-}
-
-.section-shell {
-  border: 1px solid var(--color-border-soft);
-  border-radius: 1.75rem;
-  background: rgba(255, 255, 255, 0.76);
-  backdrop-filter: blur(18px);
-  box-shadow: 0 15px 35px rgba(15, 23, 42, 0.06);
 }
 
 /* ============================================
