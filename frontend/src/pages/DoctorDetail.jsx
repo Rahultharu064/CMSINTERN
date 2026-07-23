@@ -1,131 +1,171 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
-import {doctorsData } from '../utils/dummyData';
-import  Button from '../components/ui/Button';
+import {
+  ArrowLeft,
+  Star,
+  Building2,
+  MapPin,
+  Wallet,
+  Languages,
+  Briefcase,
+  GraduationCap,
+  CalendarCheck,
+  Heart,
+  CheckCircle2,
+  Clock,
+  Frown,
+} from 'lucide-react';
+import { doctorsData } from '../utils/dummyData';
+import Button from '../components/ui/Button';
 import Card from '../components/ui/Card';
-import LoadingSpinner from '../components/ui/LoadingSpinner';
+import { getInitials } from '../utils/helpers';
+
+const availabilityStyles = {
+  'Available Today': 'badge-success',
+  'This Week': 'badge-info',
+  'Next Week': 'badge-warning',
+};
 
 const DoctorDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  
-  const doctor = doctorsData.find(d => d.id === parseInt(id));
+  const [imgError, setImgError] = useState(false);
+
+  const doctor = doctorsData.find((d) => d.id === parseInt(id));
 
   if (!doctor) {
     return (
       <div className="flex-center min-h-[60vh]">
         <div className="text-center">
-          <div className="text-6xl mb-4">😕</div>
-          <h2 className="text-2xl font-bold text-gray-700 mb-2">Doctor not found</h2>
-          <p className="text-gray-500 mb-6">The doctor you're looking for doesn't exist.</p>
+          <span className="icon-chip mx-auto mb-4 h-16 w-16">
+            <Frown className="h-8 w-8" />
+          </span>
+          <h2 className="mb-2 text-2xl font-bold text-slate-800 dark:text-white">Doctor not found</h2>
+          <p className="mb-6 text-slate-500 dark:text-slate-400">The doctor you’re looking for doesn’t exist.</p>
           <Link to="/doctors">
-            <Button variant="primary">Back to Doctors</Button>
+            <Button variant="primary" icon={<ArrowLeft className="h-4 w-4" />}>Back to doctors</Button>
           </Link>
         </div>
       </div>
     );
   }
 
+  const showImage = doctor.image && !imgError;
+
+  const details = [
+    { Icon: Building2, label: 'Hospital', value: doctor.hospital },
+    { Icon: MapPin, label: 'Location', value: doctor.location },
+    { Icon: Wallet, label: 'Consultation fee', value: `Rs. ${doctor.consultationFee}` },
+    { Icon: Languages, label: 'Languages', value: doctor.languages.join(', ') },
+    { Icon: Briefcase, label: 'Experience', value: `${doctor.experience} years` },
+  ];
+
   return (
-    <div className="container-custom py-12 animate-fade-in-up">
+    <div className="container-custom animate-fade-in-up py-12">
       <button
         onClick={() => navigate(-1)}
-        className="text-gray-600 hover:text-gray-900 flex items-center gap-2 mb-6 transition-colors"
+        className="mb-6 inline-flex items-center gap-2 text-sm font-medium text-slate-600 transition-colors hover:text-primary-600 dark:text-slate-300"
       >
-        ← Back
+        <ArrowLeft className="h-4 w-4" /> Back
       </button>
 
-      <Card className="overflow-hidden">
-        <div className="p-8">
-          <div className="flex flex-col md:flex-row items-start md:items-center gap-6">
-            <img
-              src={doctor.image || '/src/assets/images/placeholder-doctor.png'}
-              alt={doctor.name}
-              className="w-32 h-32 rounded-full object-cover border-4 border-primary-100 flex-shrink-0"
-            />
-            <div className="flex-1">
-              <h1 className="text-3xl font-bold text-gray-900">{doctor.name}</h1>
-              <p className="text-xl text-primary-600 font-medium">{doctor.specialty}</p>
-              <div className="mt-2 flex flex-wrap items-center gap-4">
-                <span className="flex items-center gap-1">
-                  <span className="text-yellow-500">⭐</span>
-                  <span className="font-semibold">{doctor.rating}</span>
-                  <span className="text-gray-500">({doctor.reviews} reviews)</span>
+      <Card hoverable={false} padding={false} className="overflow-hidden">
+        {/* Header banner */}
+        <div className="bg-gradient-to-br from-primary-700 via-primary-600 to-sky-600 p-8">
+          <div className="flex flex-col items-start gap-6 md:flex-row md:items-center">
+            {showImage ? (
+              <img
+                src={doctor.image}
+                alt={doctor.name}
+                onError={() => setImgError(true)}
+                className="h-28 w-28 shrink-0 rounded-2xl border-4 border-white/40 object-cover shadow-lg"
+              />
+            ) : (
+              <span className="flex h-28 w-28 shrink-0 items-center justify-center rounded-2xl border-4 border-white/40 bg-white/20 text-3xl font-bold text-white shadow-lg">
+                {getInitials(doctor.name.replace('Dr. ', ''))}
+              </span>
+            )}
+            <div className="flex-1 text-white">
+              <h1 className="text-3xl font-bold">{doctor.name}</h1>
+              <p className="mt-1 text-lg font-medium text-sky-100">{doctor.specialty}</p>
+              <div className="mt-3 flex flex-wrap items-center gap-3 text-sm">
+                <span className="inline-flex items-center gap-1 rounded-full bg-white/15 px-3 py-1 font-semibold backdrop-blur-sm">
+                  <Star className="h-3.5 w-3.5 fill-amber-300 text-amber-300" />
+                  {doctor.rating}
+                  <span className="font-normal text-white/80">({doctor.reviews} reviews)</span>
                 </span>
-                <span className="text-gray-500">•</span>
-                <span className="text-gray-600">{doctor.experience} years experience</span>
-                <span className="text-gray-500">•</span>
-                <span className={`badge badge-${doctor.availability === 'Available Today' ? 'success' : 'info'}`}>
+                <span className="inline-flex items-center gap-1 rounded-full bg-white/15 px-3 py-1 backdrop-blur-sm">
+                  <Briefcase className="h-3.5 w-3.5" /> {doctor.experience} yrs
+                </span>
+                <span className={`badge ${availabilityStyles[doctor.availability] || 'badge-gray'}`}>
                   {doctor.availability}
                 </span>
               </div>
             </div>
-            <div className="flex flex-col gap-2 w-full md:w-auto">
-              <Button variant="primary" size="lg" fullWidth>
-                Book Appointment
+            <div className="flex w-full flex-col gap-2 md:w-auto">
+              <Button variant="white" size="lg" fullWidth icon={<CalendarCheck className="h-5 w-5" />}>
+                Book appointment
               </Button>
-              <Button variant="outline" size="md" fullWidth>
-                Save to Favorites
+              <Button variant="outline" className="border-white/50 bg-white/10 text-white hover:bg-white/20" fullWidth icon={<Heart className="h-4 w-4" />}>
+                Save to favorites
               </Button>
             </div>
           </div>
+        </div>
 
-          <div className="mt-8 grid grid-cols-1 md:grid-cols-2 gap-8">
+        {/* Body */}
+        <div className="p-8">
+          <div className="grid grid-cols-1 gap-8 md:grid-cols-2">
             <div>
-              <h3 className="text-lg font-semibold text-gray-900 mb-3">About</h3>
-              <p className="text-gray-600 leading-relaxed">{doctor.bio}</p>
-              
-              <h3 className="text-lg font-semibold text-gray-900 mt-6 mb-3">Education</h3>
-              <p className="text-gray-600">{doctor.education}</p>
+              <h3 className="mb-3 text-lg font-semibold text-slate-900 dark:text-white">About</h3>
+              <p className="leading-relaxed text-slate-600 dark:text-slate-300">{doctor.bio}</p>
+
+              <h3 className="mb-3 mt-6 flex items-center gap-2 text-lg font-semibold text-slate-900 dark:text-white">
+                <GraduationCap className="h-5 w-5 text-primary-600 dark:text-primary-400" /> Education
+              </h3>
+              <p className="text-slate-600 dark:text-slate-300">{doctor.education}</p>
             </div>
+
             <div>
-              <h3 className="text-lg font-semibold text-gray-900 mb-3">Details</h3>
-              <div className="space-y-3">
-                <div className="flex-between border-b border-gray-100 pb-2">
-                  <span className="text-gray-600">Hospital</span>
-                  <span className="font-medium text-gray-900">{doctor.hospital}</span>
-                </div>
-                <div className="flex-between border-b border-gray-100 pb-2">
-                  <span className="text-gray-600">Location</span>
-                  <span className="font-medium text-gray-900">{doctor.location}</span>
-                </div>
-                <div className="flex-between border-b border-gray-100 pb-2">
-                  <span className="text-gray-600">Consultation Fee</span>
-                  <span className="font-medium text-gray-900">Rs. {doctor.consultationFee}</span>
-                </div>
-                <div className="flex-between border-b border-gray-100 pb-2">
-                  <span className="text-gray-600">Languages</span>
-                  <span className="font-medium text-gray-900">{doctor.languages.join(', ')}</span>
-                </div>
-                <div className="flex-between">
-                  <span className="text-gray-600">Experience</span>
-                  <span className="font-medium text-gray-900">{doctor.experience} years</span>
-                </div>
+              <h3 className="mb-3 text-lg font-semibold text-slate-900 dark:text-white">Details</h3>
+              <div className="space-y-1">
+                {details.map(({ Icon, label, value }) => (
+                  <div
+                    key={label}
+                    className="flex items-center justify-between gap-4 border-b border-slate-100 py-2.5 last:border-0 dark:border-slate-700"
+                  >
+                    <span className="flex items-center gap-2 text-slate-500 dark:text-slate-400">
+                      <Icon className="h-4 w-4" /> {label}
+                    </span>
+                    <span className="text-right font-medium text-slate-900 dark:text-white">{value}</span>
+                  </div>
+                ))}
               </div>
             </div>
           </div>
 
-          <div className="mt-8 pt-8 border-t border-gray-200">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">Availability Schedule</h3>
-            <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-4">
-              <div className="flex flex-wrap gap-4">
-                <div className="flex items-center gap-2">
-                  <span className="w-3 h-3 bg-success rounded-full"></span>
-                  <span className="text-sm text-gray-600 dark:text-gray-300">Available Today</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <span className="w-3 h-3 bg-primary-500 rounded-full"></span>
-                  <span className="text-sm text-gray-600 dark:text-gray-300">This Week</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <span className="w-3 h-3 bg-warning rounded-full"></span>
-                  <span className="text-sm text-gray-600 dark:text-gray-300">Next Week</span>
-                </div>
+          {/* Schedule */}
+          <div className="mt-8 border-t border-slate-200 pt-8 dark:border-slate-700">
+            <h3 className="mb-4 flex items-center gap-2 text-lg font-semibold text-slate-900 dark:text-white">
+              <Clock className="h-5 w-5 text-primary-600 dark:text-primary-400" /> Availability schedule
+            </h3>
+            <div className="rounded-2xl bg-slate-50 p-5 dark:bg-slate-800">
+              <div className="flex flex-wrap gap-5">
+                {[
+                  { color: 'bg-emerald-500', label: 'Available today' },
+                  { color: 'bg-primary-500', label: 'This week' },
+                  { color: 'bg-amber-500', label: 'Next week' },
+                ].map((item) => (
+                  <div key={item.label} className="flex items-center gap-2">
+                    <span className={`h-2.5 w-2.5 rounded-full ${item.color}`} />
+                    <span className="text-sm text-slate-600 dark:text-slate-300">{item.label}</span>
+                  </div>
+                ))}
               </div>
-              <div className="mt-4 text-sm text-gray-600 dark:text-gray-300">
-                <p>📅 Monday - Friday: 9:00 AM - 6:00 PM</p>
-                <p>📅 Saturday: 9:00 AM - 2:00 PM</p>
-                <p>📅 Sunday: Closed</p>
+              <div className="mt-4 grid gap-2 text-sm text-slate-600 sm:grid-cols-3 dark:text-slate-300">
+                <p className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-emerald-500" /> Sun–Fri: 9:00 AM – 6:00 PM</p>
+                <p className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-emerald-500" /> Saturday: 9:00 AM – 2:00 PM</p>
+                <p className="flex items-center gap-2 text-slate-400"><Clock className="h-4 w-4" /> Sunday: Closed</p>
               </div>
             </div>
           </div>

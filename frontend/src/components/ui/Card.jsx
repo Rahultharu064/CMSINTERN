@@ -8,13 +8,10 @@ const Card = ({
   ...props
 }) => {
   const paddingClass = padding ? 'card-body' : '';
-  const hoverClass = hoverable ? 'hover:shadow-xl hover:-translate-y-1' : '';
+  const flatClass = hoverable ? '' : 'card--flat';
 
   return (
-    <div 
-      className={`card ${paddingClass} ${hoverClass} ${className}`}
-      {...props}
-    >
+    <div className={`card ${flatClass} ${paddingClass} ${className}`} {...props}>
       {children}
     </div>
   );

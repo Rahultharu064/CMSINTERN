@@ -19,7 +19,7 @@ const Doctor = () => {
       <HeroSection />
 
       <div className="container-custom relative z-10 -mt-10 px-4 pb-16 sm:px-6 lg:px-8">
-        <Card className="mb-8 border-0 bg-white/90 p-6 shadow-[0_20px_45px_rgba(15,23,42,0.08)] backdrop-blur-sm">
+        <Card hoverable={false} className="mb-8 border border-slate-100 bg-white/95 p-6 shadow-[0_20px_45px_rgba(15,23,42,0.10)] backdrop-blur-sm dark:border-slate-700 dark:bg-slate-800/95">
           <SearchBar
             searchQuery={searchQuery}
             setSearchQuery={setSearchQuery}

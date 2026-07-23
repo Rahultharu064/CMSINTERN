@@ -1,5 +1,5 @@
-import React, { useEffect, useRef } from 'react';
-import Button from '../Button';
+import React, { useEffect } from 'react';
+import { X } from 'lucide-react';
 
 const Modal = ({
   isOpen,
@@ -10,8 +10,6 @@ const Modal = ({
   showCloseButton = true,
   className = '',
 }) => {
-  const modalRef = useRef();
-
   useEffect(() => {
     const handleEscape = (e) => {
       if (e.key === 'Escape') onClose();
@@ -39,21 +37,21 @@ const Modal = ({
   };
 
   return (
-    <div className="modal-overlay" onClick={onClose}>
-      <div 
-        ref={modalRef}
+    <div className="modal-overlay" onClick={onClose} role="dialog" aria-modal="true">
+      <div
         className={`modal ${sizeClasses[size]} ${className}`}
         onClick={(e) => e.stopPropagation()}
       >
         {(title || showCloseButton) && (
           <div className="modal-header">
-            {title && <h3 className="text-xl font-bold text-gray-900">{title}</h3>}
+            {title && <h3 className="text-xl font-bold text-slate-900 dark:text-white">{title}</h3>}
             {showCloseButton && (
               <button
                 onClick={onClose}
-                className="text-gray-400 hover:text-gray-600 transition-colors text-2xl"
+                className="flex h-9 w-9 items-center justify-center rounded-full text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-700 dark:hover:bg-slate-700 dark:hover:text-slate-200"
+                aria-label="Close dialog"
               >
-                ×
+                <X className="h-5 w-5" />
               </button>
             )}
           </div>

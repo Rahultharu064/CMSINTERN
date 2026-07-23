@@ -18,6 +18,8 @@ const Button = ({
     primary: 'btn-primary',
     secondary: 'btn-secondary',
     outline: 'btn-outline',
+    ghost: 'btn-ghost',
+    white: 'btn-white',
     success: 'btn-success',
     danger: 'btn-danger',
   };
@@ -34,19 +36,21 @@ const Button = ({
       type={type}
       onClick={onClick}
       disabled={disabled || loading}
-      className={`btn ${variantClasses[variant]} ${sizeClasses[size]} ${className} ${fullWidth ? 'btn-full' : ''}`}
+      className={`btn ${variantClasses[variant] || variantClasses.primary} ${sizeClasses[size] || ''} ${
+        fullWidth ? 'btn-full' : ''
+      } ${className}`}
       {...props}
     >
       {loading ? (
         <>
           <span className="spinner spinner-sm" />
-          <span>Loading...</span>
+          <span>Loading…</span>
         </>
       ) : (
         <>
-          {icon && iconPosition === 'left' && <span className="mr-2">{icon}</span>}
+          {icon && iconPosition === 'left' && <span className="inline-flex shrink-0">{icon}</span>}
           {children}
-          {icon && iconPosition === 'right' && <span className="ml-2">{icon}</span>}
+          {icon && iconPosition === 'right' && <span className="inline-flex shrink-0">{icon}</span>}
         </>
       )}
     </button>

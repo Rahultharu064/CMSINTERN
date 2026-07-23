@@ -1,92 +1,134 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
+import {
+  CalendarCheck,
+  Search,
+  ShieldCheck,
+  Star,
+  Clock,
+  Headset,
+  BadgeCheck,
+  ArrowRight,
+} from 'lucide-react';
 import Button from '../ui/Button';
 
+const highlights = [
+  { Icon: BadgeCheck, label: '500+ verified specialists' },
+  { Icon: Clock, label: 'Same-day appointments' },
+  { Icon: ShieldCheck, label: 'Secure online payments' },
+];
+
+const trustPoints = [
+  { label: 'Verified doctors', value: '98%', Icon: BadgeCheck },
+  { label: 'Patient rating', value: '4.9/5', Icon: Star },
+  { label: 'Specialties', value: '50+', Icon: ShieldCheck },
+  { label: 'Appointments', value: '10k+', Icon: CalendarCheck },
+];
+
 const HeroSection = () => {
-  const highlights = [
-    '500+ specialist doctors',
-    'Same-day appointments',
-    'Affordable care plans',
-  ];
-
-  const trustPoints = [
-    { label: 'Verified specialists', value: '98%' },
-    { label: 'Patient satisfaction', value: '4.9/5' },
-    { label: 'Coverage options', value: '50+' },
-    { label: 'Appointments booked', value: '1000+' },
-  ];
-
   return (
-    <section className="relative isolate overflow-hidden bg-[radial-gradient(circle_at_top_left,_rgba(255,255,255,0.22),_transparent_25%),linear-gradient(135deg,_#07111f_0%,_#123A8A_42%,_#1D4ED8_100%)]">
-      <div className="absolute inset-0 bg-[linear-gradient(120deg,rgba(255,255,255,0.2),transparent_45%,rgba(255,255,255,0.12)_70%,transparent)]" />
-      <div className="absolute -top-24 -right-10 h-72 w-72 rounded-full bg-cyan-300/20 blur-3xl" />
-      <div className="absolute bottom-0 left-0 h-64 w-64 rounded-full bg-white/10 blur-3xl" />
-      <div className="absolute inset-y-0 right-0 hidden w-1/3 bg-[radial-gradient(circle_at_center,_rgba(255,255,255,0.16),_transparent_65%)] lg:block" />
+    <section className="relative overflow-hidden bg-[linear-gradient(135deg,_#0b1220_0%,_#1d4ed8_48%,_#2563eb_100%)]">
+      {/* Ambient graphics */}
+      <div className="pointer-events-none absolute inset-0 opacity-[0.08] [background-image:radial-gradient(#fff_1px,transparent_1px)] [background-size:22px_22px]" />
+      <div className="pointer-events-none absolute -right-24 -top-24 h-96 w-96 rounded-full bg-sky-400/20 blur-3xl" />
+      <div className="pointer-events-none absolute -bottom-32 -left-16 h-96 w-96 rounded-full bg-primary-500/20 blur-3xl" />
 
-      <div className="container-custom relative py-20 lg:py-24">
-        <div className="grid items-center gap-10 lg:grid-cols-[1.05fr_0.95fr]">
+      <div className="container-custom relative py-20 lg:py-28">
+        <div className="grid items-center gap-12 lg:grid-cols-[1.1fr_0.9fr]">
           <div className="max-w-2xl">
-            <div className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-4 py-2 text-sm font-medium text-white/90 backdrop-blur-md">
-              <span className="text-base">🩺</span>
-              Premium care, simplified booking, trusted outcomes
-            </div>
+            <span className="inline-flex items-center gap-2 self-start rounded-full border border-white/20 bg-white/10 px-4 py-1.5 text-sm font-medium text-white/90 backdrop-blur-sm">
+              <span className="relative flex h-2 w-2">
+                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75" />
+                <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-400" />
+              </span>
+              Now serving patients in Kathmandu
+            </span>
 
-            <h1 className="mt-6 text-4xl font-semibold tracking-tight text-white sm:text-5xl lg:text-6xl">
-              Modern healthcare that feels effortless and personal.
+            <h1 className="mt-6 text-4xl font-extrabold leading-[1.1] tracking-tight text-white sm:text-5xl lg:text-6xl">
+              Quality healthcare,
+              <span className="block bg-gradient-to-r from-sky-300 to-amber-300 bg-clip-text text-transparent">
+                booked in under a minute.
+              </span>
             </h1>
-            <p className="mt-5 max-w-xl text-lg leading-8 text-slate-100 sm:text-xl">
-              Connect with expert doctors, access same-day care, and manage your visit with confidence from start to finish.
+
+            <p className="mt-5 max-w-xl text-lg leading-8 text-slate-200 sm:text-xl">
+              Connect with highly rated specialists, reserve an appointment instantly, and track your live
+              queue token — no phone queues, no waiting-room guesswork.
             </p>
 
-            <div className="mt-8 flex flex-wrap gap-3">
+            <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:items-center">
               <Link to="/doctors">
-                <Button size="lg" className="bg-white text-slate-900 shadow-[0_12px_35px_rgba(15,23,42,0.18)] hover:bg-slate-100">
-                  Book an Appointment
+                <Button variant="white" size="lg" className="w-full sm:w-auto" icon={<CalendarCheck className="h-5 w-5" />}>
+                  Book an appointment
                 </Button>
               </Link>
               <Link to="/services">
-                <Button variant="outline" size="lg" className="border-white/30 bg-white/10 text-white hover:bg-white/20">
-                  Explore Services
+                <Button
+                  variant="outline"
+                  size="lg"
+                  className="w-full border-white/40 bg-white/10 text-white hover:bg-white/20 sm:w-auto"
+                  icon={<Search className="h-5 w-5" />}
+                >
+                  Explore services
                 </Button>
               </Link>
             </div>
 
-            <div className="mt-8 flex flex-wrap gap-3">
-              {highlights.map((item) => (
-                <span key={item} className="rounded-full border border-white/15 bg-white/10 px-3 py-2 text-sm text-slate-100 backdrop-blur-sm">
-                  {item}
-                </span>
+            <div className="mt-8 flex flex-wrap gap-x-6 gap-y-2.5">
+              {highlights.map(({ Icon, label }) => (
+                <div key={label} className="flex items-center gap-2 text-sm text-slate-200">
+                  <Icon className="h-4 w-4 text-emerald-300" />
+                  {label}
+                </div>
               ))}
             </div>
           </div>
 
-          <div className="rounded-[30px] border border-white/25 bg-white/90 p-6 shadow-[0_30px_80px_rgba(2,6,23,0.22)] backdrop-blur-xl">
-            <div className="flex items-center justify-between rounded-2xl border border-slate-200 bg-gradient-to-r from-slate-50 to-white px-4 py-3">
-              <div>
-                <p className="text-sm font-semibold text-slate-900">24/7 patient support</p>
-                <p className="text-sm text-slate-600">From booking through follow-up care</p>
-              </div>
-              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-primary-100 text-2xl shadow-sm">
-                💬
+          {/* Trust panel */}
+          <div className="rounded-[28px] border border-white/20 bg-white/95 p-6 shadow-2xl shadow-slate-950/30 backdrop-blur-xl dark:bg-slate-900/90">
+            <div className="flex items-center justify-between rounded-2xl border border-slate-100 bg-slate-50 px-4 py-3.5 dark:border-slate-700 dark:bg-slate-800">
+              <div className="flex items-center gap-3">
+                <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary-600 text-white">
+                  <Headset className="h-5 w-5" />
+                </span>
+                <div>
+                  <p className="text-sm font-semibold text-slate-900 dark:text-white">24/7 patient support</p>
+                  <p className="text-xs text-slate-500 dark:text-slate-400">From booking to follow-up care</p>
+                </div>
               </div>
             </div>
 
-            <div className="mt-6 grid gap-4 sm:grid-cols-2">
-              {trustPoints.map((item) => (
-                <div key={item.label} className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
-                  <p className="text-2xl font-semibold text-slate-900">{item.value}</p>
-                  <p className="mt-1 text-sm text-slate-600">{item.label}</p>
+            <div className="mt-5 grid grid-cols-2 gap-3">
+              {trustPoints.map(({ label, value, Icon }) => (
+                <div
+                  key={label}
+                  className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-700 dark:bg-slate-800"
+                >
+                  <Icon className="h-5 w-5 text-primary-600 dark:text-primary-400" />
+                  <p className="mt-2 text-2xl font-bold text-slate-900 dark:text-white">{value}</p>
+                  <p className="text-xs text-slate-500 dark:text-slate-400">{label}</p>
                 </div>
               ))}
             </div>
 
-            <div className="mt-6 rounded-2xl border border-primary-100 bg-gradient-to-br from-primary-50 to-sky-50 p-4">
-              <p className="text-sm font-semibold text-primary-800">Why patients trust us</p>
-              <ul className="mt-3 space-y-2 text-sm text-slate-700">
-                <li className="flex items-center gap-2"><span className="text-primary-600">✓</span> Transparent physician profiles</li>
-                <li className="flex items-center gap-2"><span className="text-primary-600">✓</span> Secure digital consultations</li>
-                <li className="flex items-center gap-2"><span className="text-primary-600">✓</span> Consistent follow-up support</li>
+            <div className="mt-5 rounded-2xl border border-primary-100 bg-primary-50 p-4 dark:border-primary-900/40 dark:bg-primary-900/15">
+              <p className="text-sm font-semibold text-primary-800 dark:text-primary-200">Why patients trust us</p>
+              <ul className="mt-3 space-y-2 text-sm text-slate-700 dark:text-slate-300">
+                {['Transparent physician profiles', 'Secure digital consultations', 'Consistent follow-up support'].map(
+                  (item) => (
+                    <li key={item} className="flex items-center gap-2">
+                      <BadgeCheck className="h-4 w-4 shrink-0 text-primary-600 dark:text-primary-400" />
+                      {item}
+                    </li>
+                  ),
+                )}
               </ul>
+              <Link
+                to="/doctors"
+                className="mt-4 inline-flex items-center gap-1.5 text-sm font-semibold text-primary-700 hover:text-primary-800 dark:text-primary-300"
+              >
+                Meet our doctors <ArrowRight className="h-4 w-4" />
+              </Link>
             </div>
           </div>
         </div>

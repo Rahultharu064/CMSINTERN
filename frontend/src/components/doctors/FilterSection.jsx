@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { SlidersHorizontal, ChevronUp, ChevronDown, Star } from 'lucide-react';
 import { SPECIALTIES, AVAILABILITY_OPTIONS, RATING_OPTIONS, EXPERIENCE_RANGES } from '../../utils/constants';
 
 const FilterSection = ({ filters, setFilters }) => {
@@ -20,25 +21,26 @@ const FilterSection = ({ filters, setFilters }) => {
   const hasActiveFilters = Object.values(filters).some(value => value !== '');
 
   return (
-    <div className="card sticky top-24 p-6">
+    <div className="card card--flat p-6">
       <div className="flex-between mb-6">
-        <h3 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
-          <span>🔍</span> Filters
+        <h3 className="flex items-center gap-2 text-lg font-semibold text-slate-900 dark:text-white">
+          <SlidersHorizontal className="h-5 w-5 text-primary-600 dark:text-primary-400" /> Filters
         </h3>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-3">
           {hasActiveFilters && (
             <button
               onClick={clearFilters}
-              className="text-sm text-primary-600 hover:text-primary-800 transition-colors"
+              className="text-sm font-medium text-primary-600 transition-colors hover:text-primary-800 dark:text-primary-400"
             >
-              Clear All
+              Clear all
             </button>
           )}
           <button
             onClick={() => setIsExpanded(!isExpanded)}
-            className="text-gray-500 hover:text-gray-700 lg:hidden"
+            className="text-slate-500 hover:text-slate-700 lg:hidden dark:text-slate-400"
+            aria-label={isExpanded ? 'Collapse filters' : 'Expand filters'}
           >
-            {isExpanded ? '▲' : '▼'}
+            {isExpanded ? <ChevronUp className="h-5 w-5" /> : <ChevronDown className="h-5 w-5" />}
           </button>
         </div>
       </div>
@@ -46,7 +48,7 @@ const FilterSection = ({ filters, setFilters }) => {
       <div className={`space-y-6 ${isExpanded ? 'block' : 'hidden lg:block'}`}>
         {/* Specialty Filter */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
+          <label className="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-300">
             Specialty
           </label>
           <select
@@ -64,7 +66,7 @@ const FilterSection = ({ filters, setFilters }) => {
 
         {/* Availability Filter */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
+          <label className="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-300">
             Availability
           </label>
           <select
@@ -82,8 +84,8 @@ const FilterSection = ({ filters, setFilters }) => {
 
         {/* Rating Filter */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            Minimum Rating
+          <label className="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-300">
+            Minimum rating
           </label>
           <select
             value={filters.rating}
@@ -100,18 +102,18 @@ const FilterSection = ({ filters, setFilters }) => {
 
         {/* Experience Filter */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            Experience (Years)
+          <label className="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-300">
+            Experience (years)
           </label>
           <div className="grid grid-cols-2 gap-2">
             {EXPERIENCE_RANGES.map(range => (
               <button
                 key={range}
-                onClick={() => handleFilterChange('experience', range)}
-                className={`px-3 py-2 text-sm rounded-lg border transition-all ${
+                onClick={() => handleFilterChange('experience', filters.experience === range ? '' : range)}
+                className={`rounded-lg border px-3 py-2 text-sm font-medium transition-all ${
                   filters.experience === range
-                    ? 'border-primary-600 bg-primary-50 text-primary-600'
-                    : 'border-gray-300 hover:border-primary-300 hover:bg-gray-50'
+                    ? 'border-primary-600 bg-primary-50 text-primary-700 dark:bg-primary-900/25 dark:text-primary-200'
+                    : 'border-slate-300 text-slate-600 hover:border-primary-300 hover:bg-slate-50 dark:border-slate-600 dark:text-slate-300 dark:hover:bg-slate-800'
                 }`}
               >
                 {range}
@@ -122,21 +124,17 @@ const FilterSection = ({ filters, setFilters }) => {
 
         {/* Active Filters Summary */}
         {hasActiveFilters && (
-          <div className="pt-4 border-t border-gray-200">
-            <p className="text-xs text-gray-500 mb-2">Active Filters:</p>
+          <div className="border-t border-slate-200 pt-4 dark:border-slate-700">
+            <p className="mb-2 text-xs font-medium text-slate-500 dark:text-slate-400">Active filters</p>
             <div className="flex flex-wrap gap-1.5">
-              {filters.specialty && (
-                <span className="badge badge-primary">{filters.specialty}</span>
-              )}
-              {filters.availability && (
-                <span className="badge badge-success">{filters.availability}</span>
-              )}
+              {filters.specialty && <span className="badge badge-primary">{filters.specialty}</span>}
+              {filters.availability && <span className="badge badge-success">{filters.availability}</span>}
               {filters.rating && (
-                <span className="badge badge-warning">⭐ {filters.rating}</span>
+                <span className="badge badge-warning inline-flex items-center gap-1">
+                  <Star className="h-3 w-3 fill-current" /> {filters.rating}
+                </span>
               )}
-              {filters.experience && (
-                <span className="badge badge-info">{filters.experience} yrs</span>
-              )}
+              {filters.experience && <span className="badge badge-info">{filters.experience} yrs</span>}
             </div>
           </div>
         )}
