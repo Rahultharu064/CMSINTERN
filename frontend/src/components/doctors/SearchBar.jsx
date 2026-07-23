@@ -1,13 +1,20 @@
 import React, { useState, useEffect } from 'react';
 import { Search, X } from 'lucide-react';
+import { useDebounce } from '../../hooks/useDebounce';
 import Input from '../ui/Input';
 
 const SearchBar = ({ searchQuery, setSearchQuery, onSearch }) => {
   const [localQuery, setLocalQuery] = useState(searchQuery);
+  const debouncedQuery = useDebounce(localQuery, 300);
 
   useEffect(() => {
     setLocalQuery(searchQuery);
   }, [searchQuery]);
+
+  useEffect(() => {
+    setSearchQuery(debouncedQuery);
+    if (onSearch) onSearch(debouncedQuery);
+  }, [debouncedQuery, setSearchQuery, onSearch]);
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -44,10 +51,15 @@ const SearchBar = ({ searchQuery, setSearchQuery, onSearch }) => {
         )}
       </div>
 
-      <button type="submit" className="btn btn-primary whitespace-nowrap">
-        <Search className="h-4 w-4" />
-        Search
-      </button>
+      <div className="flex flex-col gap-3 md:ml-4 md:justify-between md:flex-row md:items-center md:flex-1">
+        <p className="text-sm text-slate-500 dark:text-slate-400 md:hidden">
+          Try name, specialty, hospital, location, or profession.
+        </p>
+        <button type="submit" className="btn btn-primary whitespace-nowrap">
+          <Search className="h-4 w-4" />
+          Search
+        </button>
+      </div>
     </form>
   );
 };

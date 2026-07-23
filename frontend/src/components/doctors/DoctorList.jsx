@@ -12,13 +12,26 @@ const DoctorsList = ({ searchQuery, filters }) => {
   }, [searchQuery, filters]);
 
   const filteredDoctors = useMemo(() => {
+    const normalizedQuery = searchQuery.trim().toLowerCase();
+    const queryTokens = normalizedQuery.split(/\s+/).filter(Boolean);
+
     return doctorsData.filter((doctor) => {
+      const searchableText = [
+        doctor.name,
+        doctor.specialty,
+        doctor.location,
+        doctor.hospital,
+        doctor.education,
+        doctor.bio,
+        doctor.availability,
+        ...(doctor.languages || [])
+      ]
+        .join(' ')
+        .toLowerCase();
+
       const searchMatch =
-        searchQuery.trim() === '' ||
-        doctor.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        doctor.specialty.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        doctor.location.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        doctor.hospital.toLowerCase().includes(searchQuery.toLowerCase());
+        queryTokens.length === 0 ||
+        queryTokens.every((token) => searchableText.includes(token));
 
       const specialtyMatch = filters.specialty === '' || doctor.specialty === filters.specialty;
       const availabilityMatch = filters.availability === '' || doctor.availability === filters.availability;
