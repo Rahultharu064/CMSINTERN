@@ -114,7 +114,7 @@ const Navbar = () => {
           </Link>
 
           {/* Desktop Navigation */}
-          <nav className="hidden items-center gap-1 rounded-full border border-slate-200/70 bg-slate-50/70 p-1 shadow-sm md:flex dark:border-slate-800/70 dark:bg-slate-900/70">
+          <nav className="hidden items-center gap-1 rounded-full border border-slate-200/70 bg-slate-50/70 p-1 shadow-sm lg:flex dark:border-slate-800/70 dark:bg-slate-900/70">
             {navLinks.map((link) => {
               const Icon = link.icon;
               if (link.path === '/services') {
@@ -196,7 +196,7 @@ const Navbar = () => {
           </nav>
 
           {/* Right actions */}
-          <div className="hidden items-center gap-2 md:flex">
+          <div className="hidden items-center gap-2 lg:flex">
             <button
               onClick={toggleTheme}
               className="flex h-10 w-10 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-600 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:border-primary-300 hover:text-primary-600 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300 dark:hover:border-primary-500"
@@ -225,7 +225,7 @@ const Navbar = () => {
           </div>
 
           {/* Mobile buttons */}
-          <div className="flex items-center gap-2 md:hidden">
+          <div className="flex items-center gap-2 lg:hidden">
             <button
               onClick={toggleTheme}
               className="flex h-10 w-10 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-600 shadow-sm dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300"
@@ -245,7 +245,7 @@ const Navbar = () => {
 
         {/* Mobile menu */}
         {isMenuOpen && (
-          <div className="animate-slide-down border-t border-slate-200/80 bg-white/95 py-2 backdrop-blur md:hidden dark:border-slate-800/80 dark:bg-slate-950/95">
+          <div className="animate-slide-down border-t border-slate-200/80 bg-white/95 py-2 backdrop-blur lg:hidden dark:border-slate-800/80 dark:bg-slate-950/95">
             <div className="space-y-1.5 px-1 py-2">
               {navLinks.map((link) => {
                 const Icon = link.icon;

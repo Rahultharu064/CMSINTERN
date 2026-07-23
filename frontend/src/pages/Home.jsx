@@ -14,10 +14,38 @@ import {
   Clock,
   Users,
   Star,
+  Heart,
+  Brain,
+  Baby,
+  Bone,
+  Eye,
+  Smile,
+  Quote,
+  Phone,
 } from 'lucide-react';
 import HeroSection from '../components/doctors/HeroSection.jsx';
+import DoctorCard from '../components/doctors/DoctorCard';
 import Card from '../components/ui/Card';
 import Button from '../components/ui/Button';
+import { doctorsData } from '../utils/dummyData';
+
+const specialties = [
+  { icon: Heart, tone: 'rose', label: 'Cardiology', path: '/services/cardiology' },
+  { icon: Brain, tone: 'violet', label: 'Neurology', path: '/services/neurology' },
+  { icon: Baby, tone: 'sky', label: 'Pediatrics', path: '/services/pediatrics' },
+  { icon: Bone, tone: 'slate', label: 'Orthopedics', path: '/services/orthopedics' },
+  { icon: Eye, tone: 'teal', label: 'Ophthalmology', path: '/services/ophthalmology' },
+  { icon: Smile, tone: 'cyan', label: 'Dentistry', path: '/services/dentistry' },
+];
+
+const toneClasses = {
+  rose: 'bg-rose-50 text-rose-600 dark:bg-rose-900/20 dark:text-rose-300',
+  violet: 'bg-violet-50 text-violet-600 dark:bg-violet-900/20 dark:text-violet-300',
+  sky: 'bg-sky-50 text-sky-600 dark:bg-sky-900/20 dark:text-sky-300',
+  slate: 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300',
+  teal: 'bg-teal-50 text-teal-600 dark:bg-teal-900/20 dark:text-teal-300',
+  cyan: 'bg-cyan-50 text-cyan-600 dark:bg-cyan-900/20 dark:text-cyan-300',
+};
 
 const features = [
   { icon: Stethoscope, title: 'Expert doctors', description: 'Board-certified specialists with years of hands-on clinical experience.' },
@@ -39,10 +67,10 @@ const stats = [
   { icon: Users, value: '10K+', label: 'Appointments' },
 ];
 
-const perks = [
-  'Transparent physician profiles and treatment guidance.',
-  'Flexible telehealth and in-person visits built around your routine.',
-  'Dependable follow-up and support from booking through recovery.',
+const testimonials = [
+  { name: 'Anita Shrestha', location: 'Kathmandu', initials: 'AS', tone: 'rose', quote: 'Booked a cardiologist in two minutes and got an SMS token instantly. No more waiting in long queues — this is how healthcare should work.' },
+  { name: 'Bikash Thapa', location: 'Lalitpur', initials: 'BT', tone: 'teal', quote: 'The live queue meant I arrived right when it was my turn. Paid with eSewa from my phone. Genuinely the smoothest clinic experience I have had.' },
+  { name: 'Sunita Rai', location: 'Bhaktapur', initials: 'SR', tone: 'violet', quote: 'Clear doctor profiles helped me pick the right specialist for my child. Friendly staff and a follow-up reminder afterward. Highly recommended.' },
 ];
 
 const differentiators = [
@@ -51,10 +79,42 @@ const differentiators = [
   'Clear communication, transparent care plans, and dependable follow-up.',
 ];
 
+const featuredDoctors = [...doctorsData]
+  .sort((a, b) => b.rating - a.rating || b.reviews - a.reviews)
+  .slice(0, 3);
+
 const Home = () => {
   return (
     <div>
       <HeroSection />
+
+      {/* Browse by specialty */}
+      <div className="container-custom pt-16 lg:pt-20">
+        <div className="flex flex-wrap items-end justify-between gap-4">
+          <div className="max-w-xl">
+            <span className="section-kicker"><Stethoscope className="h-4 w-4" /> Browse by specialty</span>
+            <h2 className="section-title">Find the right care, fast.</h2>
+          </div>
+          <Link to="/services" className="hidden items-center gap-1.5 text-sm font-semibold text-primary-700 hover:text-primary-800 sm:flex">
+            View all specialties <ArrowRight className="h-4 w-4" />
+          </Link>
+        </div>
+
+        <div className="mt-8 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-6">
+          {specialties.map(({ icon: Icon, tone, label, path }) => (
+            <Link
+              key={label}
+              to={path}
+              className="card card-hover group flex flex-col items-center gap-3 p-5 text-center"
+            >
+              <span className={`flex h-14 w-14 items-center justify-center rounded-2xl ${toneClasses[tone]} transition-transform group-hover:scale-110`}>
+                <Icon className="h-7 w-7" />
+              </span>
+              <span className="text-sm font-semibold text-slate-800 dark:text-slate-200">{label}</span>
+            </Link>
+          ))}
+        </div>
+      </div>
 
       <div className="container-custom py-16 lg:py-20">
         {/* Why choose us */}
@@ -78,7 +138,27 @@ const Home = () => {
           ))}
         </div>
 
-        {/* How it works + patient-first */}
+        {/* Featured doctors */}
+        <div className="mt-16">
+          <div className="flex flex-wrap items-end justify-between gap-4">
+            <div className="max-w-xl">
+              <span className="section-kicker"><Stethoscope className="h-4 w-4" /> Meet our doctors</span>
+              <h2 className="section-title">Top-rated specialists, ready to help.</h2>
+            </div>
+            <Link to="/doctors">
+              <Button variant="outline" icon={<ArrowRight className="h-4 w-4" />} iconPosition="right">
+                View all doctors
+              </Button>
+            </Link>
+          </div>
+          <div className="mt-8 grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
+            {featuredDoctors.map((doctor) => (
+              <DoctorCard key={doctor.id} doctor={doctor} />
+            ))}
+          </div>
+        </div>
+
+        {/* How it works */}
         <div className="mt-16 grid gap-6 lg:grid-cols-[1.05fr_0.95fr]">
           <div className="section-shell p-8 lg:p-10">
             <span className="section-kicker"><CalendarCheck className="h-4 w-4" /> How it works</span>
@@ -114,11 +194,13 @@ const Home = () => {
             </h3>
 
             <div className="mt-8 rounded-3xl border border-primary-100 bg-gradient-to-br from-primary-50 to-teal-50/60 p-6 dark:border-primary-900/40 dark:from-slate-800/60 dark:to-slate-800/30">
-              <p className="text-xs font-semibold uppercase tracking-[0.2em] text-primary-700 dark:text-primary-300">
-                What patients love
-              </p>
+              <p className="text-xs font-semibold uppercase tracking-[0.2em] text-primary-700 dark:text-primary-300">What patients love</p>
               <ul className="mt-4 space-y-3.5">
-                {perks.map((perk) => (
+                {[
+                  'Transparent physician profiles and treatment guidance.',
+                  'Flexible telehealth and in-person visits around your routine.',
+                  'Dependable follow-up from booking through recovery.',
+                ].map((perk) => (
                   <li key={perk} className="flex items-start gap-3 text-slate-700 dark:text-slate-300">
                     <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-primary-600 text-white">
                       <Check className="h-3 w-3" strokeWidth={3} />
@@ -145,6 +227,35 @@ const Home = () => {
                 </div>
               </div>
             </div>
+          </div>
+        </div>
+
+        {/* Testimonials */}
+        <div className="mt-16">
+          <div className="mx-auto max-w-2xl text-center">
+            <span className="section-kicker"><Quote className="h-4 w-4" /> Patient stories</span>
+            <h2 className="section-title">Loved by patients across the valley.</h2>
+          </div>
+          <div className="mt-10 grid gap-6 md:grid-cols-3">
+            {testimonials.map((t) => (
+              <Card key={t.name} className="flex flex-col p-6">
+                <div className="flex items-center gap-1 text-amber-400">
+                  {Array.from({ length: 5 }).map((_, i) => (
+                    <Star key={i} className="h-4 w-4 fill-amber-400" />
+                  ))}
+                </div>
+                <p className="mt-4 flex-1 leading-7 text-slate-600 dark:text-slate-300">“{t.quote}”</p>
+                <div className="mt-5 flex items-center gap-3 border-t border-slate-100 pt-5 dark:border-slate-800">
+                  <span className={`flex h-11 w-11 items-center justify-center rounded-full text-sm font-bold ${toneClasses[t.tone]}`}>
+                    {t.initials}
+                  </span>
+                  <div>
+                    <p className="font-semibold text-slate-900 dark:text-white">{t.name}</p>
+                    <p className="text-xs text-slate-500">{t.location}, Nepal</p>
+                  </div>
+                </div>
+              </Card>
+            ))}
           </div>
         </div>
 
@@ -193,15 +304,18 @@ const Home = () => {
           <div className="relative flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
             <div>
               <p className="text-sm font-semibold uppercase tracking-[0.25em] text-primary-100">Ready to get started?</p>
-              <h3 className="mt-2 font-display text-2xl font-bold sm:text-3xl">
-                Book your visit and experience modern care today.
-              </h3>
+              <h3 className="mt-2 font-display text-2xl font-bold sm:text-3xl">Book your visit and experience modern care today.</h3>
             </div>
-            <Link to="/contact" className="shrink-0">
-              <Button variant="accent" size="lg" icon={<ArrowRight className="h-5 w-5" />} iconPosition="right">
-                Contact Our Team
-              </Button>
-            </Link>
+            <div className="flex shrink-0 flex-wrap gap-3">
+              <Link to="/doctors">
+                <Button variant="accent" size="lg" icon={<CalendarCheck className="h-5 w-5" />}>Book Appointment</Button>
+              </Link>
+              <Link to="/contact">
+                <Button size="lg" icon={<Phone className="h-5 w-5" />} className="border border-white/25 bg-white/10 text-white hover:bg-white/20">
+                  Contact Us
+                </Button>
+              </Link>
+            </div>
           </div>
         </div>
       </div>
