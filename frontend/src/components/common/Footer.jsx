@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import {
-  HeartPulse,
+  Plus,
   MapPin,
   Phone,
   Mail,
@@ -10,15 +10,16 @@ import {
   ChevronRight,
   ArrowRight,
   Send,
+  Heart,
 } from 'lucide-react';
-import { Facebook, Twitter, Instagram, Linkedin, Youtube } from '../ui/SocialIcons';
+import { Facebook, Twitter, Instagram, Linkedin, Youtube } from '../ui/BrandIcons';
 
 const Footer = () => {
   const currentYear = new Date().getFullYear();
 
   const quickLinks = [
     { path: '/', label: 'Home' },
-    { path: '/doctors', label: 'Doctors' },
+    { path: '/doctors', label: 'Find a Doctor' },
     { path: '/services', label: 'Services' },
     { path: '/about', label: 'About Us' },
     { path: '/contact', label: 'Contact' },
@@ -35,53 +36,49 @@ const Footer = () => {
   const contactInfo = [
     { Icon: MapPin, text: 'Chabahil, Kathmandu, Nepal' },
     { Icon: Phone, text: '+977-1-444-5678' },
-    { Icon: Mail, text: 'info@clinicms.com' },
-    { Icon: Clock, text: 'Sun–Fri: 9:00 AM – 6:00 PM' },
+    { Icon: Mail, text: 'hello@medicare.com.np' },
+    { Icon: Clock, text: 'Sun–Fri: 8:00 AM – 8:00 PM' },
   ];
 
   return (
-    <footer className="mt-20 border-t border-slate-800 bg-slate-950 text-slate-300">
-      <div className="container-custom pt-14 pb-8">
+    <footer className="mt-20 bg-slate-950 text-slate-300">
+      <div className="container-custom py-14">
         <div className="grid grid-cols-1 gap-10 md:grid-cols-2 lg:grid-cols-4">
-          {/* About */}
+          {/* Brand */}
           <div>
-            <Link to="/" className="mb-4 flex items-center gap-2.5">
-              <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-primary-500 to-primary-700 text-white">
-                <HeartPulse className="h-5 w-5" strokeWidth={2.4} />
+            <div className="flex items-center gap-2.5">
+              <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-primary-400 to-primary-700 text-white shadow-lg shadow-primary-500/30">
+                <Plus className="h-5 w-5" strokeWidth={3} />
               </span>
-              <span className="text-lg font-bold text-white">
-                Clinic<span className="text-primary-400">MS</span>
+              <span className="font-display text-lg font-bold text-white">
+                Medi<span className="text-primary-400">Care</span>
               </span>
-            </Link>
-            <p className="text-sm leading-relaxed text-slate-400">
-              Your trusted healthcare partner in Nepal. Book verified doctors, track your live queue token,
-              and pay online — quality care made effortless.
+            </div>
+            <p className="mt-4 text-sm leading-relaxed text-slate-400">
+              Your trusted healthcare partner in Nepal. Book appointments with top doctors and receive quality care —
+              simply and affordably.
             </p>
             <div className="mt-5 flex gap-2">
               {socialLinks.map(({ name, Icon, url }) => (
                 <a
                   key={name}
                   href={url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex h-9 w-9 items-center justify-center rounded-lg border border-slate-800 bg-slate-900 text-slate-400 transition-all duration-200 hover:-translate-y-0.5 hover:border-primary-500 hover:bg-primary-500/10 hover:text-primary-400"
                   aria-label={name}
+                  className="flex h-9 w-9 items-center justify-center rounded-lg border border-slate-800 bg-slate-900 text-slate-400 transition-all duration-200 hover:-translate-y-0.5 hover:border-primary-500/40 hover:bg-primary-500/10 hover:text-primary-400"
                 >
                   <Icon className="h-4 w-4" />
                 </a>
               ))}
             </div>
+          </div>
 
           {/* Quick links */}
           <div>
-            <h4 className="mb-4 text-sm font-semibold uppercase tracking-wider text-slate-200">Quick Links</h4>
-            <ul className="space-y-2.5">
+            <h4 className="text-sm font-semibold uppercase tracking-wider text-white">Quick Links</h4>
+            <ul className="mt-4 space-y-2.5">
               {quickLinks.map((link) => (
                 <li key={link.path}>
-                  <Link
-                    to={link.path}
-                    className="group flex items-center gap-1.5 text-sm text-slate-400 transition-colors duration-200 hover:text-white"
-                  >
+                  <Link to={link.path} className="group flex items-center gap-1.5 text-sm text-slate-400 transition-colors hover:text-white">
                     <ChevronRight className="h-3.5 w-3.5 text-primary-500 transition-transform group-hover:translate-x-0.5" />
                     {link.label}
                   </Link>
@@ -92,81 +89,67 @@ const Footer = () => {
 
           {/* Payments */}
           <div>
-            <h4 className="mb-4 text-sm font-semibold uppercase tracking-wider text-slate-200">Payment Methods</h4>
-            <div className="flex flex-wrap gap-2">
-              {['eSewa', 'Khalti'].map((method) => (
-                <span
-                  key={method}
-                  className="inline-flex items-center rounded-lg border border-slate-800 bg-slate-900 px-3 py-1.5 text-sm font-medium text-slate-300"
-                >
-                  {method}
-                </span>
-              ))}
+            <h4 className="text-sm font-semibold uppercase tracking-wider text-white">Payments</h4>
+            <div className="mt-4 flex flex-wrap gap-2">
+              <span className="rounded-lg border border-slate-800 bg-slate-900 px-3 py-1.5 text-sm font-medium text-emerald-400">eSewa</span>
+              <span className="rounded-lg border border-slate-800 bg-slate-900 px-3 py-1.5 text-sm font-medium text-purple-400">Khalti</span>
             </div>
             <div className="mt-4 flex items-start gap-2.5 rounded-xl border border-slate-800 bg-slate-900/70 p-3">
-              <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-emerald-400" />
-              <p className="text-xs leading-relaxed text-slate-400">
-                Secure payments verified server-side with industry-standard encryption.
-              </p>
+              <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-primary-400" />
+              <p className="text-xs text-slate-400">Secure payments protected with industry-standard encryption.</p>
             </div>
+          </div>
 
           {/* Contact */}
           <div>
-            <h4 className="mb-4 text-sm font-semibold uppercase tracking-wider text-slate-200">Contact Us</h4>
-            <ul className="space-y-3">
+            <h4 className="text-sm font-semibold uppercase tracking-wider text-white">Contact Us</h4>
+            <ul className="mt-4 space-y-3">
               {contactInfo.map(({ Icon, text }, index) => (
-                <li key={index} className="flex items-start gap-3 text-sm text-slate-400">
+                <li key={index} className="flex items-start gap-2.5 text-sm text-slate-400">
                   <Icon className="mt-0.5 h-4 w-4 shrink-0 text-primary-400" />
                   <span>{text}</span>
                 </li>
               ))}
             </ul>
-            <Link
-              to="/contact"
-              className="mt-4 inline-flex items-center gap-1.5 text-sm font-semibold text-primary-400 transition-colors hover:text-primary-300"
-            >
+            <Link to="/contact" className="mt-4 inline-flex items-center gap-1.5 text-sm font-medium text-primary-400 hover:text-primary-300">
               Get in touch <ArrowRight className="h-4 w-4" />
             </Link>
           </div>
+        </div>
 
         {/* Newsletter */}
-        <div className="mt-10 border-t border-slate-800 pt-8">
-          <div className="flex flex-col items-center justify-between gap-4 md:flex-row">
+        <div className="mt-12 flex flex-col items-center justify-between gap-4 rounded-2xl border border-slate-800 bg-slate-900/60 p-6 md:flex-row">
+          <div className="flex items-center gap-3">
+            <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-primary-500/10 text-primary-400">
+              <Send className="h-5 w-5" />
+            </span>
             <div>
               <p className="text-sm font-semibold text-white">Subscribe to our newsletter</p>
-              <p className="text-xs text-slate-400">Health tips and clinic updates, straight to your inbox.</p>
+              <p className="text-xs text-slate-400">Health tips and clinic updates, once a month.</p>
             </div>
-            <form className="flex w-full gap-2 md:w-auto" onSubmit={(e) => e.preventDefault()}>
-              <input
-                type="email"
-                placeholder="Enter your email"
-                className="input input-sm flex-1 border-slate-700 bg-slate-900 text-white placeholder-slate-500 focus:border-primary-500 md:w-64"
-                aria-label="Email address"
-              />
-              <button type="submit" className="btn btn-primary btn-sm whitespace-nowrap">
-                <Send className="h-4 w-4" /> Subscribe
-              </button>
-            </form>
           </div>
+          <form className="flex w-full gap-2 md:w-auto" onSubmit={(e) => e.preventDefault()}>
+            <input
+              type="email"
+              placeholder="Enter your email"
+              className="input input-sm flex-1 border-slate-700 bg-slate-950 text-white placeholder-slate-500 md:w-64"
+            />
+            <button type="submit" className="btn btn-primary btn-sm whitespace-nowrap">Subscribe</button>
+          </form>
         </div>
       </div>
 
-      {/* Bottom bar */}
       <div className="border-t border-slate-800">
-        <div className="container-custom py-4">
-          <div className="flex flex-col items-center justify-between gap-3 text-sm md:flex-row">
-            <p className="text-center text-slate-400 md:text-left">
-              © {currentYear} Clinic Management System. All rights reserved.
-            </p>
-            <div className="flex items-center gap-4 text-slate-400">
-              <Link to="/about" className="transition-colors hover:text-white">Privacy</Link>
-              <span className="h-4 w-px bg-slate-700" />
-              <Link to="/about" className="transition-colors hover:text-white">Terms</Link>
-              <span className="h-4 w-px bg-slate-700" />
-              <Link to="/contact" className="transition-colors hover:text-white">Support</Link>
-            </div>
-            <p className="text-xs text-slate-500">Made with care in Nepal · v1.0.0</p>
+        <div className="container-custom flex flex-col items-center justify-between gap-3 py-5 text-sm md:flex-row">
+          <p className="text-slate-500">© {currentYear} MediCare Clinic. All rights reserved.</p>
+          <div className="flex items-center gap-4 text-slate-500">
+            <Link to="/privacy" className="hover:text-white">Privacy</Link>
+            <span className="h-4 w-px bg-slate-700" />
+            <Link to="/terms" className="hover:text-white">Terms</Link>
           </div>
+          <p className="flex items-center gap-1.5 text-xs text-slate-500">
+            Made with <Heart className="h-3.5 w-3.5 fill-rose-500 text-rose-500" /> in Nepal
+          </p>
         </div>
       </div>
     </footer>

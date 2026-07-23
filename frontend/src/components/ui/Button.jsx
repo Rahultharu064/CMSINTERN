@@ -16,10 +16,10 @@ const Button = ({
 }) => {
   const variantClasses = {
     primary: 'btn-primary',
+    accent: 'btn-accent',
     secondary: 'btn-secondary',
     outline: 'btn-outline',
     ghost: 'btn-ghost',
-    white: 'btn-white',
     success: 'btn-success',
     danger: 'btn-danger',
   };
@@ -36,15 +36,13 @@ const Button = ({
       type={type}
       onClick={onClick}
       disabled={disabled || loading}
-      className={`btn ${variantClasses[variant] || variantClasses.primary} ${sizeClasses[size] || ''} ${
-        fullWidth ? 'btn-full' : ''
-      } ${className}`}
+      className={`btn ${variantClasses[variant] || ''} ${sizeClasses[size] || ''} ${fullWidth ? 'btn-full' : ''} ${className}`}
       {...props}
     >
       {loading ? (
         <>
           <span className="spinner spinner-sm" />
-          <span>Loading…</span>
+          <span>Please wait…</span>
         </>
       ) : (
         <>

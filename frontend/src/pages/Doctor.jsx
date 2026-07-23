@@ -3,7 +3,6 @@ import HeroSection from '../components/doctors/HeroSection';
 import SearchBar from '../components/doctors/SearchBar';
 import FilterSection from '../components/doctors/FilterSection';
 import DoctorsList from '../components/doctors/DoctorList';
-import Card from '../components/ui/Card';
 
 const Doctor = () => {
   const [searchQuery, setSearchQuery] = useState('');
@@ -11,33 +10,27 @@ const Doctor = () => {
     specialty: '',
     availability: '',
     rating: '',
-    experience: ''
+    experience: '',
   });
 
   return (
-    <div className="min-h-screen bg-transparent">
+    <div>
       <HeroSection />
 
-      <div className="container-custom relative z-10 -mt-10 px-4 pb-16 sm:px-6 lg:px-8">
-        <Card hoverable={false} className="mb-8 border border-slate-100 bg-white/95 p-6 shadow-[0_20px_45px_rgba(15,23,42,0.10)] backdrop-blur-sm dark:border-slate-700 dark:bg-slate-800/95">
-          <SearchBar
-            searchQuery={searchQuery}
-            setSearchQuery={setSearchQuery}
-          />
-        </Card>
+      <div className="container-custom relative z-10 -mt-8 pb-16">
+        <div className="card mb-8 p-5 sm:p-6">
+          <SearchBar searchQuery={searchQuery} setSearchQuery={setSearchQuery} />
+        </div>
 
         <div className="flex flex-col gap-8 lg:flex-row">
-          <div className="w-full flex-shrink-0 lg:w-72">
-            <div className="sticky top-24">
+          <aside className="w-full flex-shrink-0 lg:w-72">
+            <div className="lg:sticky lg:top-24">
               <FilterSection filters={filters} setFilters={setFilters} />
             </div>
-          </div>
+          </aside>
 
           <div className="flex-1">
-            <DoctorsList
-              searchQuery={searchQuery}
-              filters={filters}
-            />
+            <DoctorsList searchQuery={searchQuery} filters={filters} />
           </div>
         </div>
       </div>

@@ -5,15 +5,19 @@ const Card = ({
   className = '',
   hoverable = true,
   padding = true,
+  as: Component = 'div',
   ...props
 }) => {
   const paddingClass = padding ? 'card-body' : '';
-  const flatClass = hoverable ? '' : 'card--flat';
+  const hoverClass = hoverable ? 'card-hover' : '';
 
   return (
-    <div className={`card ${flatClass} ${paddingClass} ${className}`} {...props}>
+    <Component
+      className={`card ${paddingClass} ${hoverClass} ${className}`}
+      {...props}
+    >
       {children}
-    </div>
+    </Component>
   );
 };
 

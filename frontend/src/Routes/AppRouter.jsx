@@ -113,24 +113,15 @@ const router = createBrowserRouter([
           <ProtectedRoute>
             <RouteWrapper>
               <div className="container-custom py-12">
-                <p className="eyebrow">Dashboard</p>
-                <h1 className="mt-2 text-3xl font-bold tracking-tight text-slate-900 dark:text-white">
-                  Welcome back
-                </h1>
-                <p className="mt-2 text-slate-600 dark:text-slate-400">
-                  Your appointments, prescriptions, and payments will appear here.
-                </p>
-                <div className="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-                  {[
-                    { label: 'Upcoming appointments', value: '2' },
-                    { label: 'Pending invoices', value: 'Rs. 1,500' },
-                    { label: 'Prescriptions', value: '5' },
-                  ].map((item) => (
-                    <div key={item.label} className="card card--flat">
-                      <p className="text-sm text-slate-500 dark:text-slate-400">{item.label}</p>
-                      <p className="mt-2 text-2xl font-bold text-slate-900 dark:text-white">{item.value}</p>
-                    </div>
-                  ))}
+                <div className="section-shell p-8 sm:p-10">
+                  <p className="section-kicker">Dashboard</p>
+                  <h1 className="mt-2 font-display text-3xl font-bold text-slate-900 dark:text-white">
+                    Welcome back 👋
+                  </h1>
+                  <p className="mt-3 max-w-2xl text-slate-600 dark:text-slate-400">
+                    This is a protected area. Your appointments, prescriptions, and billing history will appear here
+                    once the backend is connected.
+                  </p>
                 </div>
               </div>
             </RouteWrapper>
@@ -151,33 +142,32 @@ const router = createBrowserRouter([
         index: true,
         element: (
           <RouteWrapper>
-            <form
-              className="space-y-4"
-              onSubmit={(e) => {
-                e.preventDefault();
-                localStorage.setItem('auth_token', 'demo_token');
-                window.location.href = '/dashboard';
-              }}
-            >
+            <div className="space-y-4">
               <div>
                 <label className="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">
-                  Phone or email
+                  Email or phone
                 </label>
-                <input className="input" placeholder="98XXXXXXXX" defaultValue="98XXXXXXXX" />
+                <input type="text" placeholder="you@example.com" className="input" />
               </div>
               <div>
                 <label className="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">
                   Password
                 </label>
-                <input type="password" className="input" placeholder="••••••••" defaultValue="demo1234" />
+                <input type="password" placeholder="••••••••" className="input" />
               </div>
-              <button type="submit" className="btn btn-primary btn-full">
+              <button
+                onClick={() => {
+                  localStorage.setItem('auth_token', 'demo_token');
+                  window.location.href = '/dashboard';
+                }}
+                className="btn btn-primary btn-full"
+              >
                 Sign in
               </button>
-              <p className="text-center text-xs text-slate-500 dark:text-slate-400">
-                Demo mode — any credentials sign you in.
+              <p className="text-center text-xs text-slate-400">
+                Demo mode — any credentials will sign you in.
               </p>
-            </form>
+            </div>
           </RouteWrapper>
         ),
       },
