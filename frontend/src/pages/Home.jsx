@@ -263,8 +263,10 @@ const Home = () => {
         <div className="mt-16 grid gap-6 lg:grid-cols-[1.05fr_0.95fr]">
           <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-slate-900 via-slate-900 to-primary-900 p-8 text-white lg:p-10">
             <div className="pointer-events-none absolute -right-10 -top-10 h-48 w-48 rounded-full bg-primary-500/20 blur-3xl" />
-            <p className="relative text-xs font-semibold uppercase tracking-[0.25em] text-primary-300">Our impact</p>
-            <h3 className="relative mt-3 font-display text-2xl font-bold">Trusted by patients who expect more.</h3>
+            <p className="relative text-xs font-semibold uppercase tracking-[0.25em] !text-primary-300">Our impact</p>
+            <h3 className="relative mt-3 font-display text-2xl font-bold !text-white [text-wrap:balance]">
+              Trusted by patients who expect more.
+            </h3>
             <div className="relative mt-8 grid gap-4 sm:grid-cols-2">
               {stats.map(({ icon: Icon, value, label }) => (
                 <div key={label} className="rounded-2xl border border-white/10 bg-white/5 p-5 backdrop-blur-sm">

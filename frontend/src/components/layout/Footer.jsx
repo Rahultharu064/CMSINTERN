@@ -147,9 +147,6 @@ const Footer = () => {
             <span className="h-4 w-px bg-slate-700" />
             <Link to="/terms" className="hover:text-white">Terms</Link>
           </div>
-          <p className="flex items-center gap-1.5 text-xs text-slate-500">
-            Made with <Heart className="h-3.5 w-3.5 fill-rose-500 text-rose-500" /> in Nepal
-          </p>
         </div>
       </div>
     </footer>
