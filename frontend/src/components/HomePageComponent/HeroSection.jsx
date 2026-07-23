@@ -1,68 +1,60 @@
-import React from 'react'
-import { Calendar, Search, ChevronRight, Activity, Clock, ShieldCheck, Heart, Baby, Sparkles, Shield } from 'lucide-react';
+import React from 'react';
+import { Link } from 'react-router-dom';
+import { Calendar, Search, Check } from 'lucide-react';
 
+/**
+ * Alternate compact hero (Link-based). Not used by the Home page — the primary
+ * hero lives in components/doctors/HeroSection.jsx — but kept as a valid,
+ * self-contained variant that can be dropped in without wiring props.
+ */
 const HeroSection = () => {
+  const credentials = ['No registration fees', 'Direct SMS confirmations', 'Instant live-queue tokens'];
+
   return (
-    <>
-      {/* 1. Hero Section */}
-      <section className="relative bg-gradient-to-br from-blue-600 via-blue-700 to-indigo-800 text-white overflow-hidden py-20 lg:py-28" id="hero-section">
-        {/* Ambient graphics */}
-        <div className="absolute inset-0 opacity-10 pointer-events-none bg-[radial-gradient(#ffffff_1px,transparent_1px)] [background-size:20px_20px]"></div>
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-blue-500 rounded-full blur-3xl opacity-20 pointer-events-none"></div>
+    <section
+      className="relative overflow-hidden bg-[linear-gradient(135deg,_#022c22_0%,_#0f766e_48%,_#0d9488_100%)] py-20 text-white lg:py-28"
+      id="hero-section"
+    >
+      <div className="pointer-events-none absolute inset-0 opacity-10 [background-image:radial-gradient(#ffffff_1px,transparent_1px)] [background-size:20px_20px]" />
+      <div className="pointer-events-none absolute left-1/2 top-1/2 h-[600px] w-[600px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-teal-400/20 blur-3xl" />
 
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-          <div className="max-w-3xl flex flex-col gap-6">
-            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-blue-500/30 text-blue-100 border border-blue-400/20 self-start">
-              <span className="w-2 h-2 rounded-full bg-green-400 animate-pulse"></span>
-              Now Serving Patients at Chabahil, Kathmandu
-            </span>
-            
-            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-sans font-extrabold tracking-tight text-white leading-[1.1]">
-              Compassionate Care,<br />
-              <span className="text-amber-300">Instantly Booked.</span>
-            </h1>
-            
-            <p className="text-lg sm:text-xl text-blue-100 max-w-xl font-normal leading-relaxed">
-              Book an appointment online in under a minute. Say goodbye to long phone queues and tedious clinic waiting lines.
-            </p>
+      <div className="container-custom relative z-10">
+        <div className="flex max-w-3xl flex-col gap-6">
+          <span className="inline-flex items-center gap-1.5 self-start rounded-full border border-white/20 bg-white/10 px-3 py-1 text-xs font-semibold text-teal-50">
+            <span className="h-2 w-2 rounded-full bg-emerald-400" />
+            Now serving patients at Chabahil, Kathmandu
+          </span>
 
-            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4 mt-4">
-              <button
-                onClick={() => onNavigate('book-appointment')}
-                className="bg-amber-400 hover:bg-amber-500 text-slate-900 font-bold px-8 py-4 rounded-xl shadow-lg hover:shadow-xl transition-all transform hover:-translate-y-0.5 active:translate-y-0 cursor-pointer min-h-[48px] flex items-center justify-center gap-2 text-base focus:outline-none focus:ring-4 focus:ring-amber-300"
-                id="hero-cta-book"
-              >
-                <Calendar className="w-5 h-5 shrink-0" />
-                <span>Book Appointment</span>
-              </button>
+          <h1 className="font-display text-4xl font-extrabold leading-[1.1] tracking-tight sm:text-5xl lg:text-6xl">
+            Compassionate Care,
+            <br />
+            <span className="text-amber-300">Instantly Booked.</span>
+          </h1>
 
-              <button
-                onClick={() => onNavigate('doctors')}
-                className="bg-white/10 hover:bg-white/15 text-white border border-white/20 font-semibold px-8 py-4 rounded-xl transition-all transform hover:-translate-y-0.5 active:translate-y-0 cursor-pointer min-h-[48px] flex items-center justify-center gap-2 text-base focus:outline-none focus:ring-4 focus:ring-white/20"
-                id="hero-cta-find"
-              >
-                <Search className="w-5 h-5 shrink-0" />
-                <span>Find a Doctor</span>
-              </button>
-            </div>
+          <p className="max-w-xl text-lg leading-relaxed text-teal-50/90 sm:text-xl">
+            Book an appointment online in under a minute. Say goodbye to long phone queues and tedious clinic waiting lines.
+          </p>
 
-            {/* Micro credentials */}
-            <div className="flex flex-wrap items-center gap-x-6 gap-y-2 mt-6 text-sm text-blue-200">
-              <div className="flex items-center gap-1.5">
-                <span className="text-green-400 font-bold">✓</span> No registration fees
+          <div className="mt-2 flex flex-col gap-4 sm:flex-row">
+            <Link to="/doctors" className="btn btn-accent btn-lg">
+              <Calendar className="h-5 w-5" /> Book Appointment
+            </Link>
+            <Link to="/doctors" className="btn btn-lg border border-white/20 bg-white/10 text-white hover:bg-white/20">
+              <Search className="h-5 w-5" /> Find a Doctor
+            </Link>
+          </div>
+
+          <div className="mt-4 flex flex-wrap items-center gap-x-6 gap-y-2 text-sm text-teal-100">
+            {credentials.map((item) => (
+              <div key={item} className="flex items-center gap-1.5">
+                <Check className="h-4 w-4 text-emerald-300" strokeWidth={3} /> {item}
               </div>
-              <div className="flex items-center gap-1.5">
-                <span className="text-green-400 font-bold">✓</span> Direct SMS confirmations
-              </div>
-              <div className="flex items-center gap-1.5">
-                <span className="text-green-400 font-bold">✓</span> Instant live-queue tokens
-              </div>
-            </div>
+            ))}
           </div>
         </div>
-      </section>
-    </>
-  )
-}
+      </div>
+    </section>
+  );
+};
 
-export default HeroSection
+export default HeroSection;

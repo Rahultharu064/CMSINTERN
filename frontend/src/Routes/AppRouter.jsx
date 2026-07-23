@@ -113,8 +113,16 @@ const router = createBrowserRouter([
           <ProtectedRoute>
             <RouteWrapper>
               <div className="container-custom py-12">
-                <h1 className="text-3xl font-bold text-gray-900 mb-6">Dashboard</h1>
-                <p className="text-gray-600">Welcome to your dashboard. This is a protected route.</p>
+                <div className="section-shell p-8 sm:p-10">
+                  <p className="section-kicker">Dashboard</p>
+                  <h1 className="mt-2 font-display text-3xl font-bold text-slate-900 dark:text-white">
+                    Welcome back 👋
+                  </h1>
+                  <p className="mt-3 max-w-2xl text-slate-600 dark:text-slate-400">
+                    This is a protected area. Your appointments, prescriptions, and billing history will appear here
+                    once the backend is connected.
+                  </p>
+                </div>
               </div>
             </RouteWrapper>
           </ProtectedRoute>
@@ -135,18 +143,30 @@ const router = createBrowserRouter([
         element: (
           <RouteWrapper>
             <div className="space-y-4">
-              <p className="text-gray-600 dark:text-gray-400">
-                Please login to access your account.
-              </p>
-              <button 
+              <div>
+                <label className="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">
+                  Email or phone
+                </label>
+                <input type="text" placeholder="you@example.com" className="input" />
+              </div>
+              <div>
+                <label className="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">
+                  Password
+                </label>
+                <input type="password" placeholder="••••••••" className="input" />
+              </div>
+              <button
                 onClick={() => {
                   localStorage.setItem('auth_token', 'demo_token');
                   window.location.href = '/dashboard';
                 }}
-                className="btn btn-primary w-full"
+                className="btn btn-primary btn-full"
               >
-                Demo Login
+                Sign in
               </button>
+              <p className="text-center text-xs text-slate-400">
+                Demo mode — any credentials will sign you in.
+              </p>
             </div>
           </RouteWrapper>
         ),
