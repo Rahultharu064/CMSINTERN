@@ -97,8 +97,8 @@ const Navbar = () => {
     <header
       className={`site-header border-b transition-all duration-300 ${
         isScrolled
-          ? 'border-slate-200/70 bg-white/80 shadow-[0_10px_40px_rgba(15,23,42,0.06)] dark:border-slate-800/80 dark:bg-slate-950/80'
-          : 'border-transparent bg-white/60 dark:bg-slate-950/50'
+          ? 'border-slate-200/80 bg-white/90 shadow-[0_8px_30px_rgba(15,23,42,0.08)] dark:border-slate-800 dark:bg-slate-950/90'
+          : 'border-slate-200/70 bg-white dark:border-slate-800/80 dark:bg-slate-950'
       }`}
     >
       <div className="container-custom">
