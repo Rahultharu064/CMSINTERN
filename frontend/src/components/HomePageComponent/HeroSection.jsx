@@ -36,10 +36,10 @@ const HeroSection = () => {
           </p>
 
           <div className="mt-2 flex flex-col gap-4 sm:flex-row">
-            <Link to="/doctors" className="btn btn-accent btn-lg">
+            <Link to="/book" className="btn btn-accent btn-lg">
               <Calendar className="h-5 w-5" /> Book Appointment
             </Link>
-            <Link to="/doctors" className="btn btn-lg border border-white/20 bg-white/10 text-white hover:bg-white/20">
+            <Link to="/book" className="btn btn-lg border border-white/20 bg-white/10 text-white hover:bg-white/20">
               <Search className="h-5 w-5" /> Find a Doctor
             </Link>
           </div>

@@ -28,6 +28,8 @@ import StaffQueue from '../pages/dashboard/staff/StaffQueue';
 import StaffBilling from '../pages/dashboard/staff/StaffBilling';
 import AdminReports from '../pages/dashboard/admin/AdminReports';
 import AdminSettings from '../pages/dashboard/admin/AdminSettings';
+import PatientAppointments from '../pages/dashboard/patient/PatientAppointments';
+import PatientHistory from '../pages/dashboard/patient/PatientHistory';
 
 import LoadingSpinner from '../components/ui/LoadingSpinner';
 
@@ -111,7 +113,8 @@ const router = createBrowserRouter([
     ),
     errorElement: <NotFound />,
     children: [
-      { index: true, element: <div>Patient Dashboard Coming Soon</div> },
+      { index: true, element: <PatientAppointments /> },
+      { path: 'history', element: <PatientHistory /> },
     ],
   },
 

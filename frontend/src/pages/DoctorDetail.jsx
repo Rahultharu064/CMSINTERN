@@ -45,7 +45,7 @@ const DoctorDetail = () => {
           </span>
           <h2 className="mt-5 text-2xl font-bold text-slate-800 dark:text-white">Doctor not found</h2>
           <p className="mt-2 text-slate-500">The doctor you're looking for doesn't exist.</p>
-          <Link to="/doctors" className="mt-6 inline-block">
+          <Link to="/book" className="mt-6 inline-block">
             <Button variant="primary" icon={<ArrowLeft className="h-4 w-4" />}>Back to Doctors</Button>
           </Link>
         </div>
@@ -158,9 +158,9 @@ const DoctorDetail = () => {
             </div>
 
             <div className="mt-5 space-y-2.5">
-              <Button variant="primary" size="lg" fullWidth icon={<CalendarPlus className="h-5 w-5" />}>
-                Book Appointment
-              </Button>
+              <Link to="/book" className="btn btn-primary btn-lg btn-full">
+                <CalendarPlus className="h-5 w-5" /> Book Appointment
+              </Link>
               <Button variant="outline" size="md" fullWidth icon={<Heart className="h-4.5 w-4.5" />}>
                 Save to Favorites
               </Button>

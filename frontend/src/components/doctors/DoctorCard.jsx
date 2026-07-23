@@ -80,7 +80,7 @@ const DoctorCard = ({ doctor }) => {
       )}
 
       <Link
-        to={`/doctors/${doctor.id}`}
+        to="/book"
         className="btn btn-primary btn-sm mt-4 w-full"
       >
         Book Appointment

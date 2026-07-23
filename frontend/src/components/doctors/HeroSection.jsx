@@ -51,12 +51,12 @@ const HeroSection = () => {
             </p>
 
             <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-              <Link to="/doctors">
+              <Link to="/book">
                 <Button variant="accent" size="lg" icon={<CalendarPlus className="h-5 w-5" />} className="w-full sm:w-auto">
                   Book Appointment
                 </Button>
               </Link>
-              <Link to="/doctors">
+              <Link to="/book">
                 <Button
                   size="lg"
                   icon={<Search className="h-5 w-5" />}
@@ -145,7 +145,7 @@ const HeroSection = () => {
                 ))}
               </div>
 
-              <Link to="/doctors" className="btn btn-primary btn-full mt-4">
+              <Link to="/book" className="btn btn-primary btn-full mt-4">
                 <CalendarPlus className="h-4.5 w-4.5" /> Confirm Appointment
               </Link>
 

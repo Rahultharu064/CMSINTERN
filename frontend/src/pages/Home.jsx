@@ -145,7 +145,7 @@ const Home = () => {
               <span className="section-kicker"><Stethoscope className="h-4 w-4" /> Meet our doctors</span>
               <h2 className="section-title">Top-rated specialists, ready to help.</h2>
             </div>
-            <Link to="/doctors">
+            <Link to="/book">
               <Button variant="outline" icon={<ArrowRight className="h-4 w-4" />} iconPosition="right">
                 View all doctors
               </Button>
@@ -289,7 +289,7 @@ const Home = () => {
               ))}
             </ul>
             <div className="mt-8">
-              <Link to="/doctors">
+              <Link to="/book">
                 <Button variant="primary" size="lg" icon={<ArrowRight className="h-5 w-5" />} iconPosition="right">
                   Find Your Doctor
                 </Button>
@@ -307,7 +307,7 @@ const Home = () => {
               <h3 className="mt-2 font-display text-2xl font-bold sm:text-3xl">Book your visit and experience modern care today.</h3>
             </div>
             <div className="flex shrink-0 flex-wrap gap-3">
-              <Link to="/doctors">
+              <Link to="/book">
                 <Button variant="accent" size="lg" icon={<CalendarCheck className="h-5 w-5" />}>Book Appointment</Button>
               </Link>
               <Link to="/contact">
