@@ -21,8 +21,10 @@ import Booking from '../pages/Booking';
 
 // Dashboard pages
 import AdminOverview from '../pages/dashboard/admin/AdminOverview';
+import StaffOverview from '../pages/dashboard/staff/StaffOverview';
 import StaffAppointments from '../pages/dashboard/staff/StaffAppointments';
 import StaffPatients from '../pages/dashboard/staff/StaffPatients';
+import StaffSettings from '../pages/dashboard/staff/StaffSettings';
 import AdminDoctors from '../pages/dashboard/admin/AdminDoctors';
 import StaffQueue from '../pages/dashboard/staff/StaffQueue';
 import StaffBilling from '../pages/dashboard/staff/StaffBilling';
@@ -97,11 +99,12 @@ const router = createBrowserRouter([
     ),
     errorElement: <NotFound />,
     children: [
-      { index: true, element: <Navigate to="queue" replace /> },
+      { index: true, element: <StaffOverview /> },
       { path: 'appointments', element: <StaffAppointments /> },
       { path: 'patients', element: <StaffPatients /> },
       { path: 'queue', element: <StaffQueue /> },
       { path: 'billing', element: <StaffBilling /> },
+      { path: 'settings', element: <StaffSettings /> },
     ],
   },
   {

@@ -22,6 +22,13 @@ export const kpis = [
   { key: 'noshow', label: 'No-shows', value: 3, delta: -25, sub: '6.2% of booked', icon: 'UserX', tone: 'rose' },
 ];
 
+export const staffKpis = [
+  { label: "Today's Appointments", val: '48', sub: '+12% from yesterday' },
+  { label: 'Checked-in / Waiting', val: '14', sub: 'Active in queue' },
+  { label: 'Doctors On Duty', val: '6', sub: 'Across 4 departments' },
+  { label: 'Collection Today', val: 'Rs. 42,500', sub: 'Cash & Digital' },
+];
+
 // --- Revenue trend, last 14 days ---------------------------
 export const revenueTrend = [
   { day: 'Jul 10', online: 38000, cash: 21000 },
