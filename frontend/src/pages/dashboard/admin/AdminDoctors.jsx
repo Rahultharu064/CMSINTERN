@@ -1,8 +1,8 @@
 import React from 'react';
 import { Star, Briefcase, Wallet, UserPlus, MoreHorizontal } from 'lucide-react';
-import SectionCard from '../../components/dashboard/SectionCard';
-import { doctorsData } from '../../utils/dummyData';
-import { currency } from '../../utils/dashboardData';
+import SectionCard from '../../../components/sections/SectionCard';
+import { doctorsData } from '../../../utils/dummyData';
+import { currency } from '../../../utils/dashboardData';
 
 const availabilityTone = {
   'Available Today': 'badge-success',

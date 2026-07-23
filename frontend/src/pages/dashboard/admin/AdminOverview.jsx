@@ -13,12 +13,12 @@ import {
   CreditCard,
   Check,
 } from 'lucide-react';
-import StatCard from '../../components/dashboard/StatCard';
-import SectionCard from '../../components/dashboard/SectionCard';
-import AreaChart from '../../components/dashboard/AreaChart';
-import DonutChart from '../../components/dashboard/DonutChart';
-import BarList from '../../components/dashboard/BarList';
-import StatusPill from '../../components/dashboard/StatusPill';
+import StatCard from '../../../components/sections/StatCard';
+import SectionCard from '../../../components/sections/SectionCard';
+import AreaChart from '../../../components/sections/AreaChart';
+import DonutChart from '../../../components/sections/DonutChart';
+import BarList from '../../../components/sections/BarList';
+import StatusPill from '../../../components/sections/StatusPill';
 import {
   kpis,
   revenueTrend,
@@ -29,7 +29,7 @@ import {
   liveQueue,
   activityFeed,
   currency,
-} from '../../utils/dashboardData';
+} from '../../../utils/dashboardData';
 
 const iconMap = { CalendarCheck, Users, Wallet, UserX };
 const ranges = ['Today', '7 days', '30 days'];

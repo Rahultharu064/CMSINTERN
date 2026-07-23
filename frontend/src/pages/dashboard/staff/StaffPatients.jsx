@@ -1,7 +1,7 @@
 import React, { useMemo, useState } from 'react';
 import { Search, UserPlus, Globe, Building2, Phone } from 'lucide-react';
-import SectionCard from '../../components/dashboard/SectionCard';
-import { patients } from '../../utils/dashboardData';
+import SectionCard from '../../../components/sections/SectionCard';
+import { patients } from '../../../utils/dashboardData';
 
 const avatarTones = ['bg-primary-100 text-primary-700', 'bg-sky-100 text-sky-700', 'bg-violet-100 text-violet-700', 'bg-rose-100 text-rose-700', 'bg-amber-100 text-amber-700'];
 

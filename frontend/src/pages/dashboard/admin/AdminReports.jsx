@@ -1,11 +1,11 @@
 import React from 'react';
 import { Download, TrendingUp, CalendarRange } from 'lucide-react';
-import SectionCard from '../../components/dashboard/SectionCard';
-import AreaChart from '../../components/dashboard/AreaChart';
-import DonutChart from '../../components/dashboard/DonutChart';
-import BarList from '../../components/dashboard/BarList';
-import StatCard from '../../components/dashboard/StatCard';
-import { revenueTrend, bookingSource, paymentMix, doctorLoad, currency } from '../../utils/dashboardData';
+import SectionCard from '../../../components/sections/SectionCard';
+import AreaChart from '../../../components/sections/AreaChart';
+import DonutChart from '../../../components/sections/DonutChart';
+import BarList from '../../../components/sections/BarList';
+import StatCard from '../../../components/sections/StatCard';
+import { revenueTrend, bookingSource, paymentMix, doctorLoad, currency } from '../../../utils/dashboardData';
 
 const Reports = () => {
   const total = revenueTrend.reduce((s, d) => s + d.online + d.cash, 0);

@@ -1,7 +1,7 @@
 import React from 'react';
 import { PhoneCall, Clock, Users2 } from 'lucide-react';
-import SectionCard from '../../components/dashboard/SectionCard';
-import { liveQueue } from '../../utils/dashboardData';
+import SectionCard from '../../../components/sections/SectionCard';
+import { liveQueue } from '../../../utils/dashboardData';
 
 const next = (token) => {
   const [p, n] = token.split('-');

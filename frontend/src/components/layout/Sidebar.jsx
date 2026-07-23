@@ -15,18 +15,7 @@ import {
   X,
 } from 'lucide-react';
 
-const nav = [
-  { to: '/dashboard', label: 'Overview', icon: LayoutDashboard, end: true },
-  { to: '/dashboard/appointments', label: 'Appointments', icon: CalendarDays, badge: '48' },
-  { to: '/dashboard/patients', label: 'Patients', icon: Users },
-  { to: '/dashboard/doctors', label: 'Doctors', icon: Stethoscope },
-  { to: '/dashboard/queue', label: 'Live Queue', icon: ListOrdered, dot: true },
-  { to: '/dashboard/billing', label: 'Billing', icon: Receipt },
-  { to: '/dashboard/reports', label: 'Reports', icon: BarChart3 },
-  { to: '/dashboard/settings', label: 'Settings', icon: Settings },
-];
-
-const Sidebar = ({ open, onClose }) => {
+const Sidebar = ({ open, onClose, navItems, title = 'Clinic' }) => {
   return (
     <>
       {/* Mobile backdrop */}
@@ -41,7 +30,7 @@ const Sidebar = ({ open, onClose }) => {
       >
         {/* Brand */}
         <div className="flex h-16 items-center justify-between border-b border-slate-200 px-5 dark:border-slate-800">
-          <Link to="/dashboard" className="flex items-center gap-2.5">
+          <Link to="/" className="flex items-center gap-2.5">
             <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-primary-400 to-primary-700 text-white shadow-lg shadow-primary-500/30">
               <Plus className="h-5 w-5" strokeWidth={3} />
             </span>
@@ -56,8 +45,8 @@ const Sidebar = ({ open, onClose }) => {
 
         {/* Nav */}
         <nav className="flex-1 space-y-1 overflow-y-auto px-3 py-4">
-          <p className="px-3 pb-2 text-[11px] font-semibold uppercase tracking-wider text-slate-400">Clinic</p>
-          {nav.map(({ to, label, icon: Icon, end, badge, dot }) => (
+          <p className="px-3 pb-2 text-[11px] font-semibold uppercase tracking-wider text-slate-400">{title}</p>
+          {navItems.map(({ to, label, icon: Icon, end, badge, dot }) => (
             <NavLink
               key={to}
               to={to}

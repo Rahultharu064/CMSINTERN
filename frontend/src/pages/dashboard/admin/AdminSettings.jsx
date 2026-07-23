@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Building2, Bell, CreditCard, Save } from 'lucide-react';
-import SectionCard from '../../components/dashboard/SectionCard';
+import SectionCard from '../../../components/sections/SectionCard';
 
 const Toggle = ({ checked, onChange }) => (
   <button

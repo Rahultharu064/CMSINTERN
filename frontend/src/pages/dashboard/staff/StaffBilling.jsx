@@ -1,9 +1,9 @@
 import React from 'react';
 import { Download, Wallet, TrendingUp, Clock } from 'lucide-react';
-import StatCard from '../../components/dashboard/StatCard';
-import SectionCard from '../../components/dashboard/SectionCard';
-import StatusPill from '../../components/dashboard/StatusPill';
-import { invoices, currency } from '../../utils/dashboardData';
+import StatCard from '../../../components/sections/StatCard';
+import SectionCard from '../../../components/sections/SectionCard';
+import StatusPill from '../../../components/sections/StatusPill';
+import { invoices, currency } from '../../../utils/dashboardData';
 
 const methodTone = {
   eSewa: 'text-emerald-600 dark:text-emerald-400',

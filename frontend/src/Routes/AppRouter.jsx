@@ -2,9 +2,11 @@ import React from 'react';
 import { createBrowserRouter, RouterProvider, Navigate } from 'react-router-dom';
 
 // Layouts
-import Layout from '../components/common/Layout';
-import AuthLayout from '../components/common/AuthLayout';
-import DashboardLayout from '../components/dashboard/DashboardLayout';
+import Layout from '../components/layout/Layout';
+import AuthLayout from '../components/layout/AuthLayout';
+import AdminLayout from '../components/layout/AdminLayout';
+import StaffLayout from '../components/layout/StaffLayout';
+import PatientLayout from '../components/layout/PatientLayout';
 
 // Public pages
 import Home from '../pages/Home';
@@ -15,16 +17,17 @@ import Contact from '../pages/Contact';
 import NotFound from '../pages/Error';
 import Services from '../pages/Services';
 import ServiceDetail from '../pages/ServiceDetail';
+import Booking from '../pages/Booking';
 
 // Dashboard pages
-import Overview from '../pages/dashboard/Overview';
-import Appointments from '../pages/dashboard/Appointments';
-import Patients from '../pages/dashboard/Patients';
-import DashboardDoctors from '../pages/dashboard/Doctors';
-import Queue from '../pages/dashboard/Queue';
-import Billing from '../pages/dashboard/Billing';
-import Reports from '../pages/dashboard/Reports';
-import DashboardSettings from '../pages/dashboard/Settings';
+import AdminOverview from '../pages/dashboard/admin/AdminOverview';
+import StaffAppointments from '../pages/dashboard/staff/StaffAppointments';
+import StaffPatients from '../pages/dashboard/staff/StaffPatients';
+import AdminDoctors from '../pages/dashboard/admin/AdminDoctors';
+import StaffQueue from '../pages/dashboard/staff/StaffQueue';
+import StaffBilling from '../pages/dashboard/staff/StaffBilling';
+import AdminReports from '../pages/dashboard/admin/AdminReports';
+import AdminSettings from '../pages/dashboard/admin/AdminSettings';
 
 import LoadingSpinner from '../components/ui/LoadingSpinner';
 
@@ -62,28 +65,53 @@ const router = createBrowserRouter([
       { path: 'services/:serviceId', element: <RouteWrapper><ServiceDetail /></RouteWrapper> },
       { path: 'about', element: <RouteWrapper><About /></RouteWrapper> },
       { path: 'contact', element: <RouteWrapper><Contact /></RouteWrapper> },
+      { path: 'book', element: <RouteWrapper><Booking /></RouteWrapper> },
       { path: 'home', element: <Navigate to="/" replace /> },
     ],
   },
 
-  // ---- Authenticated dashboard (own shell) ----
+  // ---- Authenticated dashboards (Admin, Staff, Patient) ----
   {
-    path: '/dashboard',
+    path: '/admin',
     element: (
       <ProtectedRoute>
-        <DashboardLayout />
+        <AdminLayout />
       </ProtectedRoute>
     ),
     errorElement: <NotFound />,
     children: [
-      { index: true, element: <Overview /> },
-      { path: 'appointments', element: <Appointments /> },
-      { path: 'patients', element: <Patients /> },
-      { path: 'doctors', element: <DashboardDoctors /> },
-      { path: 'queue', element: <Queue /> },
-      { path: 'billing', element: <Billing /> },
-      { path: 'reports', element: <Reports /> },
-      { path: 'settings', element: <DashboardSettings /> },
+      { index: true, element: <AdminOverview /> },
+      { path: 'doctors', element: <AdminDoctors /> },
+      { path: 'reports', element: <AdminReports /> },
+      { path: 'settings', element: <AdminSettings /> },
+    ],
+  },
+  {
+    path: '/staff',
+    element: (
+      <ProtectedRoute>
+        <StaffLayout />
+      </ProtectedRoute>
+    ),
+    errorElement: <NotFound />,
+    children: [
+      { index: true, element: <Navigate to="queue" replace /> },
+      { path: 'appointments', element: <StaffAppointments /> },
+      { path: 'patients', element: <StaffPatients /> },
+      { path: 'queue', element: <StaffQueue /> },
+      { path: 'billing', element: <StaffBilling /> },
+    ],
+  },
+  {
+    path: '/patient',
+    element: (
+      <ProtectedRoute>
+        <PatientLayout />
+      </ProtectedRoute>
+    ),
+    errorElement: <NotFound />,
+    children: [
+      { index: true, element: <div>Patient Dashboard Coming Soon</div> },
     ],
   },
 

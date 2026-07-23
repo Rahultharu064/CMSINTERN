@@ -217,7 +217,7 @@ const Navbar = () => {
                 <Link to="/login">
                   <Button variant="ghost" size="sm" icon={<LogIn className="h-4 w-4" />}>Login</Button>
                 </Link>
-                <Link to="/doctors">
+                <Link to="/book">
                   <Button variant="primary" size="sm" icon={<CalendarPlus className="h-4 w-4" />}>Book Now</Button>
                 </Link>
               </>
@@ -296,7 +296,7 @@ const Navbar = () => {
                     <Link to="/login" className="flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium text-slate-600 hover:bg-slate-50 dark:text-slate-300 dark:hover:bg-slate-800">
                       <LogIn className="h-4.5 w-4.5" /> Login
                     </Link>
-                    <Link to="/doctors" className="flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-primary-500 to-primary-700 px-4 py-3 text-sm font-semibold text-white shadow-md shadow-primary-500/25">
+                    <Link to="/book" className="flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-primary-500 to-primary-700 px-4 py-3 text-sm font-semibold text-white shadow-md shadow-primary-500/25">
                       <CalendarPlus className="h-4.5 w-4.5" /> Book Appointment
                     </Link>
                   </>
