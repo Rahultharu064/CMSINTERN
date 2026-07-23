@@ -71,7 +71,6 @@ const Footer = () => {
                 </a>
               ))}
             </div>
-          </div>
 
           {/* Quick links */}
           <div>
@@ -110,7 +109,6 @@ const Footer = () => {
                 Secure payments verified server-side with industry-standard encryption.
               </p>
             </div>
-          </div>
 
           {/* Contact */}
           <div>
@@ -130,7 +128,6 @@ const Footer = () => {
               Get in touch <ArrowRight className="h-4 w-4" />
             </Link>
           </div>
-        </div>
 
         {/* Newsletter */}
         <div className="mt-10 border-t border-slate-800 pt-8">
