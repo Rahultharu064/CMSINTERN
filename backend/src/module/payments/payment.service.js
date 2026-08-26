@@ -1,4 +1,4 @@
-import prisma from "../../config/database"
+import prisma from "../../config/database.js"
 
 
 // create payment
@@ -170,6 +170,7 @@ export const getPayments = async (page=1, limit=10, filter={}) => {
 }
 
 // get payment by id
+
 // get payment by bill
 export const getPaymentById = async (billId, page=1, limit=10) => {
     const skip = (page-1)* limit;
@@ -317,5 +318,129 @@ return updatedPayment;
 
 
 // reunfud 
+
 // status bill 
 //delete payment
+
+//get payment histroy (admin and staff dashboard)
+export const getPaymentHistory = async (patientId , page=1, limit=10) =>{
+    const skip = (page-1)* limit;
+    
+    const [payments, total] = await Promise.all([
+        prisma.payment.findMany({
+            where:{
+                bill:{
+                    patientId:patientId
+                }
+            },
+            include:{
+                bill:{
+                    include:{
+                        patient:{
+                            include:{
+                                user:{
+                                    select:{
+                                        fullName:true,
+                                        email:true,
+                                        phone:true
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            skip,
+            take:limit,
+            orderBy:{
+                paymentDate:"desc"
+            }
+        }),
+        prisma.payment.count({
+            where:{
+                bill:{
+                    patientId:patientId
+                }
+            }
+        })
+    ])
+
+    return {
+        payments,
+        pagination:{
+            page,
+            limit,
+            total,
+            totalPages: Math.ceil(total/limit)
+        }
+    }
+
+
+}
+
+// Refund payment
+export const refundPayment = async (paymentId, refundData) => {
+    const { reason } = refundData;
+
+    // Check if payment exists
+    const payment = await prisma.payment.findUnique({
+        where: { id: paymentId },
+        include: { bill: true }
+    });
+
+    if (!payment) {
+        throw new Error("Payment not found");
+    }
+
+    // Check if payment is already refunded
+    if (payment.status === "REFUNDED") {
+        throw new Error("Payment is already refunded");
+    }
+
+    // Check if payment can be refunded
+    if (payment.status === "CANCELLED") {
+        throw new Error("Cannot refund a cancelled payment");
+    }
+
+    // Update payment status to REFUNDED
+    const refundedPayment = await prisma.payment.update({
+        where: { id: paymentId },
+        data: {
+            status: "REFUNDED",
+            note: reason || "Payment refunded"
+        }
+    });
+
+    // Update bill status if all payments are refunded
+    const remainingPayments = await prisma.payment.findMany({
+        where: {
+            billId: payment.billId,
+            status: { not: "REFUNDED" }
+        }
+    });
+
+    if (remainingPayments.length === 0) {
+        await prisma.bill.update({
+            where: { id: payment.billId },
+            data: { status: "REFUNDED" }
+        });
+    }
+
+    return refundedPayment;
+}
+
+// Alias for getAllPayments to match controller
+export const getAllPayments = async (page=1, limit=10, filters={}) => {
+    return getPayments(page, limit, filters);
+}
+
+// Alias for getPaymentByBillId to match controller
+export const getPaymentByBillId = async (billId) => {
+    return getPaymentById(billId);
+}
+
+// Alias for getPatientPaymentHistory to match controller
+export const getPatientPaymentHistory = async (patientId, page=1, limit=10) => {
+    return getPaymentHistory(patientId, page, limit);
+}
+
