@@ -3,11 +3,11 @@ import path from 'path';
 import fs from 'fs';
 import { fileURLToPath } from 'url';
 
-const __filename = fileURLToPath(import.meta.url);
+const __filename = fileURLToPath(import.meta.url);  
 const __dirname = path.dirname(__filename);
 
 // Ensure upload directories exist
-const uploadDir = path.join(__dirname, '../../uploads');
+const uploadDir = path.join(__dirname, '../../uploads');  /// created the folder named the uploads where we used to store the path of the file
 const patientDir = path.join(uploadDir, 'patients');
 const doctorDir = path.join(uploadDir, 'doctors');
 const documentsDir = path.join(uploadDir, 'documents');
@@ -22,7 +22,7 @@ directories.forEach(dir => {
 // File filter
 const fileFilter = (req, file, cb) => {
   const allowedTypes = /jpeg|jpg|png|gif|pdf|doc|docx|txt/;
-  const extname = allowedTypes.test(path.extname(file.originalname).toLowerCase());
+  const extname = allowedTypes.test(path.extname(file.originalname).toLowerCase()); //  rahul.png  iwakshfkjdshfehsdih.png 
   const mimetype = allowedTypes.test(file.mimetype);
 
   if (mimetype && extname) {
