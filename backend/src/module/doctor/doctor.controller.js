@@ -12,7 +12,7 @@ import { MESSAGES } from '../../constans/messages.js';
 // ==================== CREATE DOCTOR ====================
 export const createDoctor = async (req, res) => {
   try {
-    const doctor = await doctorService.createDoctor(req.body);
+    const doctor = await doctorService.createDoctor(req.body, req.files);
     return createdResponse(res, doctor, 'Doctor created successfully');
   } catch (error) {
     console.error('Create doctor error:', error);
@@ -86,7 +86,7 @@ export const getDoctorByUserId = async (req, res) => {
 export const updateDoctor = async (req, res) => {
   try {
     const { id } = req.params;
-    const doctor = await doctorService.updateDoctor(id, req.body);
+    const doctor = await doctorService.updateDoctor(id, req.body, req.files);
     return successResponse(res, doctor, 'Doctor updated successfully');
   } catch (error) {
     console.error('Update doctor error:', error);

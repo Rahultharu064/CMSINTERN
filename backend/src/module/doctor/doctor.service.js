@@ -1,8 +1,9 @@
 import prisma from "../../config/database.js";
 import { MESSAGES } from "../../constans/messages.js";
+import { uploadMultipleToCloudinaryFn, deleteFromCloudinaryFn } from "../../config/multer.js";
 
 // ==================== CREATE DOCTOR ====================
-export const createDoctor = async (doctorData) => {
+export const createDoctor = async (doctorData, files={}) => {
   const { userId, ...data } = doctorData;
 
   // Check if user exists
@@ -33,6 +34,10 @@ export const createDoctor = async (doctorData) => {
   }
 
   // upload documents to cloudinary
+  let uploadedFiles = [];
+  if (files && files.length > 0) {
+    uploadedFiles = await uploadMultipleToCloudinaryFn(files, 'healthcare/doctors');
+  }
 
   // Check if license number is unique
   if (data.licenseNumber) {
@@ -52,6 +57,7 @@ export const createDoctor = async (doctorData) => {
       ...data,
       qualifications: data.qualifications || [],
       availableDays: data.availableDays || [],
+      certificates: uploadedFiles,
       
     },
     include: {
@@ -259,7 +265,7 @@ export const getDoctorByUserId = async (userId) => {
 };
 
 // ==================== UPDATE DOCTOR ====================
-export const updateDoctor = async (doctorId, updateData) => {
+export const updateDoctor = async (doctorId, updateData, files={}) => {
   // Check if doctor exists
   const existingDoctor = await prisma.doctor.findUnique({
     where: { id: doctorId },
@@ -279,6 +285,27 @@ export const updateDoctor = async (doctorId, updateData) => {
       throw new Error('License number already exists');
     }
   }
+
+  let uploadedDocuments = [];
+  if (files && files.length > 0) {
+    uploadedDocuments = await uploadMultipleToCloudinaryFn(files, 'healthcare/doctors');
+  }
+
+  const existingCertificates = existingDoctor.certificates || [];
+  let allDocuments = [...existingCertificates, ...uploadedDocuments];
+
+  if (updateData.removeDocuments) {
+    const removeDocPublicIds = updateData.removeDocuments;
+    allDocuments = allDocuments.filter(doc => !removeDocPublicIds.includes(doc.publicId));
+    for (const publicId of removeDocPublicIds) {
+      await deleteFromCloudinaryFn(publicId);
+    }
+  }
+  
+  if (uploadedDocuments.length > 0 || updateData.removeDocuments) {
+    updateData.certificates = allDocuments;
+  }
+  delete updateData.removeDocuments;
 
   const doctor = await prisma.doctor.update({
     where: { id: doctorId },
@@ -321,6 +348,12 @@ export const deleteDoctor = async (doctorId) => {
 
   if (!doctor) {
     throw new Error('Doctor not found');
+  }
+
+  if (doctor.certificates) {
+    for (const doc of doctor.certificates) {
+      await deleteFromCloudinaryFn(doc.publicId);
+    }
   }
 
   // Delete all related records

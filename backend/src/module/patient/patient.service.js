@@ -244,19 +244,22 @@ if(files && files.length > 0){
   uploadedDocuments = await uploadMultipleToCloudinaryFn(files,'healthcare/patients');
 }
 // merge existing documents with newly uploaded documents
-const existingDcouments = existingPatient.documents || [];
-const allDocuments = [...existingDcouments, ...uploadedDocuments]; // Merge existing and newly uploaded documents
+const existingDocuments = existingPatient.documents || [];
+let allDocuments = [...existingDocuments, ...uploadedDocuments]; // Merge existing and newly uploaded documents
+
 // if documents are removed, delete them from cloudinary
-if(updatedData.removeDocuments){
-  const removeDocPublicIds = updatedData.removeDocuments; // Array of public IDs to remove
-  const remainingDocuments = allDocuments.filter(doc => !removeDocPublicIds.includes(doc.publicId)); // Filter out documents to be removed
+if(updateData.removeDocuments){
+  const removeDocPublicIds = updateData.removeDocuments; // Array of public IDs to remove
+  allDocuments = allDocuments.filter(doc => !removeDocPublicIds.includes(doc.publicId)); // Filter out documents to be removed
   // Delete documents from cloudinary
   for(const publicId of removeDocPublicIds){
     await deleteFromCloudinaryFn(publicId);
   }
-  updatedData.documents = remainingDocuments; // Update documents field with remaining documents
-
 }
+if(uploadedDocuments.length > 0 || updateData.removeDocuments){
+    updateData.documents = allDocuments;
+}
+delete updateData.removeDocuments;
 
   const patient = await prisma.patient.update({
     where: { id: patientId },

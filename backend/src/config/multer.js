@@ -123,7 +123,7 @@ export const uploadMultipleToCloudinaryFn = async (files, folder = 'healthcare',
   try {
     if (!files || files.length === 0) throw new Error('No files provided');
 
-    const results = await uploadMultipleToCloudinary(files, {
+    const results = await uploadMulterToCloudinary(files, {
       folder,
       resource_type: 'auto',
       ...options,

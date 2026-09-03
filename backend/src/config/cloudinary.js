@@ -16,7 +16,7 @@ cloudinary.config({
 //upload file to cloudinary
 export const uploadToCloudinary = async (file,options={})=>{
     try{
-        const result= await cloudinary.uploader(file.path,{
+        const result= await cloudinary.uploader.upload(file.path,{
             folder:options.folder  || 'cmsfolder',
             public_id:options.public_id || 'undefined',
             resource_type:options.resource_type || 'auto',
@@ -37,7 +37,7 @@ export const uploadToCloudinary = async (file,options={})=>{
 export const uploadMulterToCloudinary =async(files,options={})=>{
     try{
         const uploadPromises = files.map(file=>{
-            uploadMulterToCloudinary(file , {...options,
+            return uploadToCloudinary(file , {...options,
                 public_id:`${options.folder || 'healthcare'}/${Date.now()}-${file.originalname.split('.')[0]}`,
 
             })

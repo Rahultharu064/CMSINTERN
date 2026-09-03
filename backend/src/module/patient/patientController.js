@@ -13,7 +13,7 @@ export const createPatient = async (req, res) => {
             return errorResponse(res, "Unauthorized: user not authenticated");
         }
 
-        const patient = await patientService.createPatient({ userId, ...req.body });
+        const patient = await patientService.createPatient({ userId, ...req.body }, req.files);
 
         return createdResponse(res, patient, 'Patient created successfully');
     }
@@ -91,7 +91,7 @@ export const getPatientByUserId = async (req, res) => {
 export const updatePatient = async (req, res) => {
     try {
         const { id } = req.params;
-        const patient = await patientService.updatePatient(id, req.body);
+        const patient = await patientService.updatePatient(id, req.body, req.files);
         return successResponse(res, patient, 'Patient updated successfully');
     }
     catch (error) {

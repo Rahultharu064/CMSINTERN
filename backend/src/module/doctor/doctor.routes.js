@@ -9,6 +9,8 @@ import {
 import {verifyToken, authorize} from '../../middleware/authMiddleware.js'
 import { validate } from '../../middleware/validateMiddleware.js'
 import { ROLES } from '../../constans/roles.js';
+import { uploadMultiple } from '../../config/multer.js';
+import { handleMulterError } from '../../middleware/multerMiddleware.js';
 
 const router = express.Router();
 
@@ -25,6 +27,8 @@ router.use(verifyToken);
 router.post(
   '/',
   authorize(ROLES.ADMIN),
+  uploadMultiple,
+  handleMulterError,
   validate(createDoctorSchema),
   doctorController.createDoctor
 );
@@ -53,6 +57,8 @@ router.get(
 router.put(
   '/:id',
   authorize(ROLES.ADMIN),
+  uploadMultiple,
+  handleMulterError,
   validate(updateDoctorSchema),
   doctorController.updateDoctor
 );

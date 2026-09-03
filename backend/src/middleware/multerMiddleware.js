@@ -1,3 +1,5 @@
+import multer from 'multer';
+
 export const handleMulterError = (err, req, res, next) => {
   if (err instanceof multer.MulterError) {
     if (err.code === 'FILE_TOO_LARGE') {
