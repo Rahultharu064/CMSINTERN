@@ -4,7 +4,7 @@ import { SOCKET_EVENTS, SOCKET_ROOMS, PRESENCE_STATES, SOCKET_CONFIG } from './s
 import { ENV } from './env.js';
 import prisma from './database.js';
 import jwtService from '../utils/jwt.js';
-// import socketEmitter from '../utils/socketEmitter.js';
+import socketEmitter from '../utils/socketEmitter.js';
 
 class SocketManager {
   constructor() {
