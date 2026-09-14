@@ -117,3 +117,9 @@ crup operation of patient
 
 
  multer ko barema pathera aaunu 
+
+
+ frontend url = http://localhost:5173 // 5175
+ backend url = htpp://localhost:5000 
+
+ www.nmb.com.xyz
