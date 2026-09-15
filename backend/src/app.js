@@ -53,8 +53,6 @@ app.use(
   })
 );
 
-app.options('*', cors());
-
 // 3. Global API rate limiting
 app.use('/api', globalApiLimiter);
 
