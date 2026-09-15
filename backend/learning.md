@@ -123,3 +123,7 @@ crup operation of patient
  backend url = htpp://localhost:5000 
 
  www.nmb.com.xyz
+
+ //patient // create/edit (fetch)
+ // patientdetails
+ // patientList
