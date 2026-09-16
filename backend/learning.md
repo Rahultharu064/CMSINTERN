@@ -124,6 +124,8 @@ crup operation of patient
 
  www.nmb.com.xyz
 
+ // assignment todays
+
  //patient // create/edit (fetch)
  // patientdetails
  // patientList

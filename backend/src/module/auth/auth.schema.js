@@ -51,6 +51,8 @@ export const loginSchema = z.object({
         .min(1, 'Password is required'),
 });
 
+export const adminLoginSchema = loginSchema;
+
 // Verify Email Validation Schema
 export const verifyEmailSchema = z.object({
     email: z.string()
