@@ -32,6 +32,7 @@ import StaffAppointments from '../pages/dashboard/staff/StaffAppointments';
 import StaffPatients from '../pages/dashboard/staff/StaffPatients';
 import StaffSettings from '../pages/dashboard/staff/StaffSettings';
 import AdminDoctors from '../pages/dashboard/admin/AdminDoctors';
+import AdminDepartments from '../pages/dashboard/admin/AdminDepartments.jsx';
 import AdminStaff from '../pages/dashboard/admin/AdminStaff';
 import StaffQueue from '../pages/dashboard/staff/StaffQueue';
 import StaffBilling from '../pages/dashboard/staff/StaffBilling';
@@ -160,6 +161,7 @@ const router = createBrowserRouter([
     children: [
       { index: true, element: <AdminOverview /> },
       { path: 'doctors', element: <AdminDoctors /> },
+      { path: 'departments', element: <AdminDepartments /> },
       { path: 'staff', element: <AdminStaff /> },
       { path: 'reports', element: <AdminReports /> },
       { path: 'settings', element: <AdminSettings /> },

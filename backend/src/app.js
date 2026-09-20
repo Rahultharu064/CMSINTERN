@@ -1,4 +1,6 @@
 import express from 'express';
+import path from 'path';
+import { fileURLToPath } from 'url';
 import cookieParser from 'cookie-parser';
 import cors from 'cors';
 import router from './routes/index.js';
@@ -10,6 +12,7 @@ import sanitize from './middleware/sanitize.js';
 import helmetConfig, { extraSecurityHeaders, noCacheMiddleware } from './middleware/securityHeaders.js';
 
 const app = express();
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 app.set('trust proxy', ENV.NODE_ENV === 'production' ? 1 : 0);
 
@@ -60,6 +63,10 @@ app.use('/api', globalApiLimiter);
 app.use(express.json({ limit: '1mb' }));
 app.use(express.urlencoded({ extended: true, limit: '1mb' }));
 app.use(cookieParser());
+
+if (ENV.NODE_ENV !== 'production') {
+  app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
+}
 
 // 5. XSS + SQL injection sanitization on body/params/query
 app.use(sanitize);

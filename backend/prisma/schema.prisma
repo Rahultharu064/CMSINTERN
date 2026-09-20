@@ -75,7 +75,7 @@ model Doctor {
   departmentId      String?
   department        Department? @relation(fields: [departmentId], references: [id], onDelete: SetNull)
   specialization    String?
-  licenseNumber     String?
+  licenseNumber     String?  @unique
   qualifications    Json?    // Array of qualification strings
   experience        Int?
   hospital          String?

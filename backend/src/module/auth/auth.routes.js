@@ -22,11 +22,11 @@ router.post('/reset-password', authController.resetPassword);
 
 // Token Management
 router.post('/refresh-token', authController.refreshToken);
+router.post('/logout', authController.logout);
 
 // ==================== PROTECTED ROUTES ====================
 router.use(verifyToken);
 
-router.post('/logout', authController.logout);
 router.get('/profile', authController.getProfile);
 
 // Profile update — supports optional avatar upload
