@@ -24,6 +24,7 @@ import Login from '../pages/Login.jsx';
 import Register from '../pages/Register.jsx';
 import ForgotPassword from '../pages/ForgotPassword.jsx';
 import ResetPassword from '../pages/ResetPassword.jsx';
+import VerifyEmail from '../pages/VerifyEmail.jsx';
 
 import AdminOverview from '../pages/dashboard/admin/AdminOverview';
 import StaffOverview from '../pages/dashboard/staff/StaffOverview';
@@ -266,6 +267,21 @@ const router = createBrowserRouter([
         element: (
           <RouteWrapper>
             <ForgotPassword />
+          </RouteWrapper>
+        ),
+      },
+    ],
+  },
+
+  {
+    path: '/verify-email',
+    element: <AuthLayout />,
+    children: [
+      {
+        index: true,
+        element: (
+          <RouteWrapper>
+            <VerifyEmail />
           </RouteWrapper>
         ),
       },
