@@ -1,7 +1,4 @@
-import axios from "../utils/axios.js"
-import {io} from 'socket.io-client'
-
-
+import axios from '../utils/axios.js';
 
 const API_URL = '/notifcations';
 
@@ -18,7 +15,7 @@ export const getUnreadCount = async()=>{
     return response.data.data
 }
 //Marks as read
-export const marksRead = async(noificationId) =>{
+export const marksRead = async(notificationId) =>{
     const response = await axios.patch(`${API_URL}/${notificationId}/read`);
     return response.data.data;
 }
@@ -37,8 +34,14 @@ export const deleteNotifications = async(notificationId) =>{
 
 //clear all notifications
 export const clearNotifications= async()=>{
-    const response = await axios.delete(`${API_URL}/clear-all`)
+    const response = await axios.delete(`${API_URL}/clear-all`);
+    return response.data.data;
 }
+
+export const markAsRead = marksRead;
+export const markAllAsRead = marksAsRead;
+export const deleteNotification = deleteNotifications;
+export const clearAllNotifications = clearNotifications;
 
 
 export default {
