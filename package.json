@@ -12,6 +12,7 @@
     "install:backend": "cd backend && npm install",
     "install:frontend": "cd frontend && npm install",
     "install:all": "npm run install:backend && npm run install:frontend",
+    "postinstall": "npm run prisma:generate",
     "postinstall:all": "cd backend && npx prisma generate",
 
     "-------------- DEVELOPMENT --------------": "",
@@ -28,7 +29,7 @@
 
     "-------------- BUILD / PRODUCTION --------------": "",
     "build:frontend": "cd frontend && npm run build",
-    "build": "npm run build:frontend",
+    "build": "npm run prisma:generate && npm run build:frontend",
     "start:backend": "cd backend && node src/server.js",
     "start": "npm run start:backend",
 
