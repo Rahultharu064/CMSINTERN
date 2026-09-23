@@ -23,7 +23,7 @@ export const createStaff = async (req, res) => {
 
 export const listStaff = async (req, res) => {
   try {
-    const data = await staffService.listStaff({ ...req.query });
+    const data = await staffService.listStaff({ ...(req.validatedQuery || req.query) });
     return successResponse(res, data, 'Staff members retrieved');
   } catch (err) {
     return errorResponse(res, err.message || 'Failed to retrieve staff members');

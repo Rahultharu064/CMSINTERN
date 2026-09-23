@@ -12,3 +12,6 @@ export const cancelBill = async (id, reason) => unwrap(await axios.patch(`${API_
 export const getInvoice = async (id) => unwrap(await axios.get(`${API_URL}/${id}/invoice/json`));
 export const getInvoiceByNumber = async (invoiceNumber) => unwrap(await axios.get(`${API_URL}/invoice/${invoiceNumber}/json`));
 export const getInvoiceDownloadUrl = (id) => `${API_URL}/${id}/invoice/download`;
+export const getBillSummary = async (params = {}) => unwrap(await axios.get(`${API_URL}/summary`, { params }));
+export const deleteBill = async (id) => unwrap(await axios.delete(`${API_URL}/${id}`));
+export const getPaymentReceipt = async (paymentId) => unwrap(await axios.get(`${API_URL}/receipt/${paymentId}`));

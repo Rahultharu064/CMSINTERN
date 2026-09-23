@@ -30,7 +30,7 @@ const validateQuery = (schema) => (req, res, next) => {
         errors: formatted,
       });
     }
-    req.query = parsed.data;
+    req.validatedQuery = parsed.data;
     next();
   } catch (err) {
     next(err);

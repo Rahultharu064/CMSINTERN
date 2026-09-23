@@ -40,6 +40,7 @@ import AdminReports from '../pages/dashboard/admin/AdminReports';
 import AdminSettings from '../pages/dashboard/admin/AdminSettings';
 import PatientAppointments from '../pages/dashboard/patient/PatientAppointments';
 import PatientHistory from '../pages/dashboard/patient/PatientHistory';
+import PatientBills from '../pages/dashboard/patient/PatientBills';
 
 import DoctorOverview from '../pages/dashboard/doctor/DoctorOverview';
 import DoctorAppointments from '../pages/dashboard/doctor/DoctorAppointments';
@@ -215,6 +216,7 @@ const router = createBrowserRouter([
     children: [
       { index: true, element: <PatientAppointments /> },
       { path: 'history', element: <PatientHistory /> },
+      { path: 'bills', element: <PatientBills /> },
     ],
   },
 

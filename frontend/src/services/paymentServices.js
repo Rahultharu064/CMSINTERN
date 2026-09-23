@@ -2,7 +2,7 @@ import axios from '../utils/axios';
 
 const API_URL = '/payments';
 
-// ==================== CASH/CARD PAYMENT ====================
+// ==================== CASH PAYMENT ====================
 
 export const processPayment = async (paymentData) => {
   const response = await axios.post(API_URL, paymentData);
@@ -46,40 +46,49 @@ export const updatePayment = async (paymentId, updateData) => {
 
 export const deletePayment = async (paymentId) => {
   const response = await axios.delete(`${API_URL}/${paymentId}`);
-  return response.data;
+  return response.data.data;
 };
 
-//  KHALTI PAYMENT 
+export const getTransactionHistory = async (params = {}) => {
+  const response = await axios.get(`${API_URL}/transactions`, { params });
+  return response.data.data;
+};
+
+export const downloadTransactionsCSV = async () => {
+  return axios.get(`${API_URL}/transactions/export/csv`, { responseType: 'blob' });
+};
+
+// ==================== KHALTI PAYMENT ====================
 
 export const initiateKhaltiPayment = async (paymentData) => {
-  const response = await axios.post(`${API_URL}/khalti/initiate`, paymentData);
+  const response = await axios.post('/khalti/initiate', paymentData);
   return response.data.data;
 };
 
 export const verifyKhaltiPayment = async (pidx) => {
-  const response = await axios.get(`${API_URL}/khalti/verify/${pidx}`);
+  const response = await axios.get(`/khalti/verify/${pidx}`);
   return response.data.data;
 };
 
 export const getKhaltiPaymentStatus = async (pidx) => {
-  const response = await axios.get(`${API_URL}/khalti/status/${pidx}`);
+  const response = await axios.get(`/khalti/status/${pidx}`);
   return response.data.data;
 };
 
 // ==================== ESEWA PAYMENT ====================
 
 export const initiateEsewaPayment = async (paymentData) => {
-  const response = await axios.post(`${API_URL}/esewa/initiate`, paymentData);
+  const response = await axios.post('/esewa/initiate', paymentData);
   return response.data.data;
 };
 
 export const verifyEsewaPayment = async (transactionUuid) => {
-  const response = await axios.get(`${API_URL}/esewa/verify/${transactionUuid}`);
+  const response = await axios.get(`/esewa/status/${transactionUuid}`);
   return response.data.data;
 };
 
 export const getEsewaPaymentStatus = async (transactionUuid) => {
-  const response = await axios.get(`${API_URL}/esewa/status/${transactionUuid}`);
+  const response = await axios.get(`/esewa/status/${transactionUuid}`);
   return response.data.data;
 };
 
@@ -93,6 +102,8 @@ export default {
   refundPayment,
   updatePayment,
   deletePayment,
+  getTransactionHistory,
+  downloadTransactionsCSV,
   initiateKhaltiPayment,
   verifyKhaltiPayment,
   getKhaltiPaymentStatus,

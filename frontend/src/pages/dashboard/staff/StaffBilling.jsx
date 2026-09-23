@@ -1,18 +1,17 @@
-import React, { useEffect, useState } from 'react';
-import { useParams, Link, useNavigate } from 'react-router-dom';
-import { getBillById } from '../../../services/paymentServices';
+import { useEffect, useState } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
+import { getBill } from '../../../services/billingService';
 import LoadingSpinner from '../../../components/ui/LoadingSpinner';
 import PaymentModal from '../../../components/ui/PaymentModal';
 import toast from 'react-hot-toast';
 import {
-  FiArrowLeft,
-  FiPrinter,
-  FiCreditCard,
-  FiCheckCircle,
-  FiXCircle,
-  FiDownload,
-  FiSmartphone,
-} from 'react-icons/fi';
+  ArrowLeft,
+  Printer,
+  CreditCard,
+  CheckCircle2,
+  Smartphone,
+  FileText,
+} from 'lucide-react';
 
 const StaffBilling = () => {
   const { id } = useParams();
@@ -28,7 +27,7 @@ const StaffBilling = () => {
     setIsLoading(true);
     setError(null);
     try {
-      const data = await getBillById(id);
+      const data = await getBill(id);
       setBill(data);
     } catch (err) {
       const message = err.response?.data?.message || 'Failed to fetch bill';
@@ -40,11 +39,42 @@ const StaffBilling = () => {
   };
 
   useEffect(() => {
-    fetchBill();
+    const timeoutId = window.setTimeout(fetchBill, 0);
+    return () => window.clearTimeout(timeoutId);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id]);
 
   // ==================== RENDER ====================
+  if (!id) {
+    return (
+      <div className="space-y-6">
+        <div className="flex items-center gap-4">
+          <button
+            onClick={() => navigate('/staff/billing')}
+            className="p-2 hover:bg-gray-100 rounded-lg"
+          >
+            <ArrowLeft size={20} />
+          </button>
+          <div>
+            <h1 className="text-2xl font-bold text-gray-900">Invalid bill</h1>
+            <p className="text-gray-600 mt-1">No bill ID was provided in the URL.</p>
+          </div>
+        </div>
+        <div className="bg-red-50 border border-red-200 text-red-700 px-6 py-8 rounded-xl text-center">
+          <FileText className="h-12 w-12 mx-auto mb-4 text-red-400" />
+          <p className="text-lg font-semibold mb-2">Cannot display bill</p>
+          <p className="text-sm text-red-600 mb-4">Please select a bill from the billing list.</p>
+          <button
+            onClick={() => navigate('/staff/billing')}
+            className="inline-flex items-center gap-2 bg-red-600 text-white px-5 py-2.5 rounded-lg hover:bg-red-700 font-medium text-sm"
+          >
+            <ArrowLeft size={16} /> Back to Billing List
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   if (isLoading) {
     return (
       <div className="flex justify-center py-20">
@@ -55,8 +85,30 @@ const StaffBilling = () => {
 
   if (error || !bill) {
     return (
-      <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-lg">
-        {error || 'Bill not found'}
+      <div className="space-y-6">
+        <div className="flex items-center gap-4">
+          <button
+            onClick={() => navigate('/staff/billing')}
+            className="p-2 hover:bg-gray-100 rounded-lg"
+          >
+            <ArrowLeft size={20} />
+          </button>
+          <div>
+            <h1 className="text-2xl font-bold text-gray-900">Bill Details</h1>
+            <p className="text-gray-600 mt-1">Bill not found</p>
+          </div>
+        </div>
+        <div className="bg-red-50 border border-red-200 text-red-700 px-6 py-8 rounded-xl text-center">
+          <FileText className="h-12 w-12 mx-auto mb-4 text-red-400" />
+          <p className="text-lg font-semibold mb-2">{error || 'Bill not found'}</p>
+          <p className="text-sm text-red-600 mb-4">The requested bill may have been deleted or the ID is incorrect.</p>
+          <button
+            onClick={() => navigate('/staff/billing')}
+            className="inline-flex items-center gap-2 bg-red-600 text-white px-5 py-2.5 rounded-lg hover:bg-red-700 font-medium text-sm"
+          >
+            <ArrowLeft size={16} /> Back to Billing List
+          </button>
+        </div>
       </div>
     );
   }
