@@ -82,8 +82,8 @@ export const initiateEsewaPayment = async (paymentData) => {
   return response.data.data;
 };
 
-export const verifyEsewaPayment = async (transactionUuid) => {
-  const response = await axios.get(`/esewa/status/${transactionUuid}`);
+export const verifyEsewaPayment = async (payload) => {
+  const response = await axios.post('/esewa/verify', payload);
   return response.data.data;
 };
 

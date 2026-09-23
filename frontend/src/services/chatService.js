@@ -19,15 +19,15 @@ export const connectSocket= (token) =>{
 
     })
 
-    socket.on('connect',()=>{
-        console.log('socket connected')
-    })
-     socket.on('disconnect',()=>{
-        console.log('socket disconnected')
-    })
-     socket.on('socket_error',(err)=>{
-        console.log('socket connecttion error:',err.message)
-    })
+    socket.on('connect', () => {
+      if (import.meta.env.DEV) console.debug('[socket] connected', socket.id);
+    });
+    socket.on('disconnect', (reason) => {
+      if (import.meta.env.DEV) console.debug('[socket] disconnected', reason);
+    });
+    socket.on('socket_error', (err) => {
+      if (import.meta.env.DEV) console.debug('[socket] connection error:', err?.message || err);
+    });
 
 
     return socket 

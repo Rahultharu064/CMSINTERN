@@ -1,0 +1,53 @@
+{
+  "name": "cmsintern",
+  "version": "1.0.0",
+  "private": true,
+  "description": "CMSINTERN — Hospital / Clinic Management System. Node.js + Express 5 + Prisma (MySQL) backend, React 19 + Vite + Redux Toolkit + Tailwind 4 frontend.",
+  "workspaces": [
+    "backend",
+    "frontend"
+  ],
+  "scripts": {
+    "-------------- INSTALL --------------": "",
+    "install:backend": "cd backend && npm install",
+    "install:frontend": "cd frontend && npm install",
+    "install:all": "npm run install:backend && npm run install:frontend",
+    "postinstall:all": "cd backend && npx prisma generate",
+
+    "-------------- DEVELOPMENT --------------": "",
+    "dev:backend": "cd backend && npm run dev",
+    "dev:frontend": "cd frontend && npm run dev",
+    "dev": "npm run dev:backend & npm run dev:frontend",
+
+    "-------------- DATABASE / PRISMA --------------": "",
+    "prisma:generate": "cd backend && npx prisma generate",
+    "prisma:migrate": "cd backend && npx prisma migrate dev",
+    "prisma:deploy": "cd backend && npx prisma migrate deploy",
+    "seed": "cd backend && npm run seed",
+    "db:setup": "npm run prisma:deploy && npm run seed",
+
+    "-------------- BUILD / PRODUCTION --------------": "",
+    "build:frontend": "cd frontend && npm run build",
+    "build": "npm run build:frontend",
+    "start:backend": "cd backend && node src/server.js",
+    "start": "npm run start:backend",
+
+    "-------------- VERIFY / CHECK --------------": "",
+    "check:backend-syntax": "cd backend && find src -name \"*.js\" -exec node --check {} \\;",
+    "check:frontend-build": "cd frontend && npm run build",
+    "check:all": "npm run check:backend-syntax && npm run check:frontend-build",
+
+    "-------------- QUICK START --------------": "",
+    "firstrun": "npm run install:all && npm run prisma:generate && echo \"✅ Done! Configure backend/.env, then run: npm run dev\""
+  },
+  "engines": {
+    "node": ">=18.17.0",
+    "npm": ">=9"
+  },
+  "repository": {
+    "type": "git",
+    "url": "local"
+  },
+  "author": "CMSINTERN",
+  "license": "UNLICENSED"
+}
