@@ -30,7 +30,7 @@
     "-------------- BUILD / PRODUCTION --------------": "",
     "build:frontend": "cd frontend && npm run build",
     "build": "npm run prisma:generate && npm run build:frontend",
-    "start:backend": "cd backend && node src/server.js",
+    "start:backend": "cd backend && npx --yes prisma@6.12.0 migrate deploy && node src/server.js",
     "start": "npm run start:backend",
 
     "-------------- VERIFY / CHECK --------------": "",
