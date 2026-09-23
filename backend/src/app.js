@@ -88,6 +88,14 @@ app.use((req, res, next) => {
 // ROUTES
 // ============================================================
 
+app.get('/', (req, res) => {
+  res.json({
+    success: true,
+    message: 'Clinic Management System API is running.',
+    health: '/api/health',
+  });
+});
+
 app.use('/api', router);
 
 // ============================================================

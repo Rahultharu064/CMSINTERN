@@ -21,9 +21,9 @@
     "dev": "npm run dev:backend & npm run dev:frontend",
 
     "-------------- DATABASE / PRISMA --------------": "",
-    "prisma:generate": "cd backend && npx prisma generate",
-    "prisma:migrate": "cd backend && npx prisma migrate dev",
-    "prisma:deploy": "cd backend && npx prisma migrate deploy",
+    "prisma:generate": "cd backend && npx --yes prisma@6.12.0 generate",
+    "prisma:migrate": "cd backend && npx --yes prisma@6.12.0 migrate dev",
+    "prisma:deploy": "cd backend && npx --yes prisma@6.12.0 migrate deploy",
     "seed": "cd backend && npm run seed",
     "db:setup": "npm run prisma:deploy && npm run seed",
 
