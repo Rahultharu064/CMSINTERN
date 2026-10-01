@@ -3,20 +3,24 @@ import { z } from 'zod';
 // Register Validation Schema — public patient and doctor signup.
 export const registerSchema = z.object({
     fullName: z.string()
+        .min(1, 'Full name is required')
+        .trim()
         .min(2, 'Full name must be at least 2 characters')
-        .max(100, 'Full name cannot exceed 100 characters')
-        .min(1, 'Full name is required'),
+        .max(100, 'Full name cannot exceed 100 characters'),
 
     email: z.string()
-        .email('Please enter a valid email')
         .min(1, 'Email is required')
-        .transform(val => val.toLowerCase().trim()),
+        .trim()
+        .email('Please enter a valid email')
+        .transform(val => val.toLowerCase()),
 
     phone: z.string()
         .min(1, 'Phone number is required')
-        .regex(/^\+?[\d\s-]{10,}$/, 'Please enter a valid phone number'),
+        .trim()
+        .regex(/^[+\d][\d\s()-.]{7,}$/, 'Please enter a valid phone number'),
 
     password: z.string()
+        .min(1, 'Password is required')
         .min(8, 'Password must be at least 8 characters')
         .regex(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/,
             'Password must contain at least one uppercase, one lowercase, and one number'),
@@ -25,11 +29,14 @@ export const registerSchema = z.object({
         .min(1, 'Confirm password is required'),
 
     role: z
-        .enum(['PATIENT', 'DOCTOR'], {
-            invalid_type_error: 'Choose either Patient or Doctor.',
-        })
+        .union([z.string().trim(), z.undefined(), z.null()])
         .optional()
-        .default('PATIENT'),
+        .transform(val => {
+            if (!val) return 'PATIENT';
+            const role = String(val).toUpperCase();
+            if (role === 'DOCTOR' || role === 'PATIENT' || role === 'RECEPTIONIST' || role === 'ADMIN') return role;
+            return 'PATIENT';
+        }),
 }).refine((data) => data.password === data.confirmPassword, {
     message: 'Passwords do not match',
     path: ['confirmPassword'],
@@ -126,7 +133,7 @@ export const updateProfileSchema = z.object({
         .optional(),
     
     phoneNumber: z.string()
-        .regex(/^\+?[\d\s-]{10,}$/, 'Please enter a valid phone number')
+        .regex(/^[+\d][\d\s()-.]{7,}$/, 'Please enter a valid phone number')
         .optional(),
 }).partial();
 

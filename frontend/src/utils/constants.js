@@ -24,8 +24,27 @@ export const PAYMENT_METHODS = ['eSewa', 'Khalti', 'ConnectIPS', 'Bank Transfer'
 
 export const APP_NAME = import.meta.env.VITE_APP_NAME || 'Clinic Management System';
 export const APP_VERSION = import.meta.env.VITE_APP_VERSION || '1.0.0';
-const configuredApiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000';
-export const API_URL = `${configuredApiUrl.replace(/\/$/, '')}/api`;
+
+const configuredApiUrl = (import.meta.env.VITE_API_URL || '').trim();
+const isBrowser = typeof window !== 'undefined';
+const browserOrigin =
+  isBrowser && window.location && window.location.origin && window.location.origin !== 'null'
+    ? window.location.origin
+    : '';
+
+let baseApiHost;
+if (configuredApiUrl) {
+  baseApiHost = configuredApiUrl;
+} else if (import.meta.env.PROD && browserOrigin) {
+  baseApiHost = browserOrigin;
+} else if (import.meta.env.DEV) {
+  baseApiHost = 'http://localhost:4000';
+} else {
+  baseApiHost = browserOrigin || '';
+}
+
+export const API_URL = `${baseApiHost.replace(/\/$/, '')}/api`;
+export const API_BASE_URL = baseApiHost.replace(/\/$/, '');
 
 export const SERVICES = [
   {

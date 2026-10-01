@@ -1,5 +1,6 @@
 import express from 'express';
 import path from 'path';
+import fs from 'node:fs';
 import { fileURLToPath } from 'url';
 import cookieParser from 'cookie-parser';
 import cors from 'cors';
@@ -64,8 +65,28 @@ app.use(express.json({ limit: '1mb' }));
 app.use(express.urlencoded({ extended: true, limit: '1mb' }));
 app.use(cookieParser());
 
-if (ENV.NODE_ENV !== 'production') {
-  app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
+app.use('/uploads', express.static(path.join(__dirname, '../uploads'), {
+    maxAge: ENV.NODE_ENV === 'production' ? '7d' : 0,
+    immutable: ENV.NODE_ENV === 'production',
+    fallthrough: true,
+}));
+
+const frontendDistCandidates = [
+    ENV.FRONTEND_DIST,
+    path.resolve(__dirname, '../../frontend/dist'),
+    path.join(__dirname, '../public'),
+].filter(Boolean);
+let frontendDistDir = null;
+for (const p of frontendDistCandidates) {
+    try { if (fs.existsSync(p) && fs.statSync(p).isDirectory()) { frontendDistDir = p; break; } } catch {}
+}
+if (frontendDistDir) {
+    app.use(express.static(frontendDistDir, {
+        maxAge: ENV.NODE_ENV === 'production' ? '1y' : 0,
+        immutable: ENV.NODE_ENV === 'production',
+        index: false,
+        fallthrough: true,
+    }));
 }
 
 // 5. XSS + SQL injection sanitization on body/params/query
@@ -103,9 +124,28 @@ app.use('/api', router);
 // ============================================================
 
 app.use((req, res) => {
+  if (req.originalUrl.startsWith('/api/') || req.method !== 'GET') {
+    return res.status(404).json({
+      success: false,
+      message: `Route not found: ${req.method} ${req.originalUrl}`,
+    });
+  }
+  if (req.originalUrl.startsWith('/uploads/')) {
+    return res.status(404).json({ success: false, message: 'File not found' });
+  }
+  if (frontendDistDir) {
+    const idx = path.join(frontendDistDir, 'index.html');
+    try {
+      if (fs.existsSync(idx)) {
+        res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+        return res.status(200).sendFile(idx);
+      }
+    } catch {}
+  }
   res.status(404).json({
     success: false,
     message: `Route not found: ${req.method} ${req.originalUrl}`,
+    hint: 'In production, deploy frontend separately or set FRONTEND_DIST=/path/to/frontend/dist to enable SPA routing.',
   });
 });
 

@@ -51,6 +51,31 @@ const initialState = {
   resendingVerification: false,
 };
 
+const extractFieldErrors = (error) => {
+  const issues = error?.response?.data?.errors;
+  if (Array.isArray(issues) && issues.length) {
+    const first = issues[0];
+    if (first?.path && first?.message) {
+      const labelMap = {
+        fullName: 'Full name', email: 'Email', phone: 'Phone', password: 'Password',
+        confirmPassword: 'Confirm password', role: 'Role', otp: 'Code',
+        newPassword: 'New password', currentPassword: 'Current password',
+      };
+      const path = String(first.path).split('.').pop();
+      const label = labelMap[path] || path;
+      return {
+        summary: `${label}: ${first.message}`,
+        fields: issues.reduce((acc, cur) => {
+          const p = String(cur.path || '').split('.').pop();
+          if (p) acc[p] = (acc[p] || []).concat(cur.message);
+          return acc;
+        }, {}),
+      };
+    }
+  }
+  return null;
+};
+
 export const registerUser = createAsyncThunk(
   'auth/register',
   async (userData, { rejectWithValue }) => {
@@ -58,7 +83,8 @@ export const registerUser = createAsyncThunk(
       const response = await authServices.register(userData);
       return response;
     } catch (error) {
-      const message = error.response?.data?.message || error.message || 'Registration failed';
+      const details = extractFieldErrors(error);
+      const message = details?.summary || error.response?.data?.message || error.message || 'Registration failed';
       return rejectWithValue(message);
     }
   }
@@ -71,7 +97,8 @@ export const loginUser = createAsyncThunk(
       const response = await authServices.login(credentials);
       return response;
     } catch (error) {
-      const message = error.response?.data?.message || error.message || 'Login failed';
+      const details = extractFieldErrors(error);
+      const message = details?.summary || error.response?.data?.message || error.message || 'Login failed';
       return rejectWithValue(message);
     }
   }
@@ -84,7 +111,8 @@ export const adminLoginUser = createAsyncThunk(
       const response = await authServices.adminLogin(credentials);
       return { ...response, email: credentials.email };
     } catch (error) {
-      const message = error.response?.data?.message || error.message || 'Admin login failed';
+      const details = extractFieldErrors(error);
+      const message = details?.summary || error.response?.data?.message || error.message || 'Admin login failed';
       return rejectWithValue(message);
     }
   }

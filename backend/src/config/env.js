@@ -2,6 +2,20 @@ import dotenv from "dotenv";
 
 dotenv.config();
 
+export const resendApiKey = process.env.RESEND_API_KEY || '';
+
+const resendKeyFromEnv = process.env.RESEND_API_KEY;
+const emailFromEnv = process.env.EMAIL_FROM || process.env.EMAIL_FROM_ADDR;
+if (resendKeyFromEnv && !emailFromEnv && process.env.NODE_ENV !== 'development') {
+  console.warn('='.repeat(72));
+  console.warn('🚨 EMAIL CONFIG WARNING: RESEND_API_KEY is set but EMAIL_FROM is not!');
+  console.warn('   Emails will 400 in production until you set EMAIL_FROM to a');
+  console.warn('   Resend-verified sender (e.g. EMAIL_FROM="Clinic <noreply@yourdomain>").');
+  console.warn('   Falling back to Resend test sender "onboarding@resend.dev" which');
+  console.warn('   only delivers to your own Resend account email.');
+  console.warn('='.repeat(72));
+}
+
 export const ENV = {
   // Server
   PORT: process.env.PORT || 5000,
@@ -35,7 +49,7 @@ export const ENV = {
 
   // Resend (https://resend.com/docs/api-reference/introduction)
   EMAIL_PROVIDER: "resend",
-  RESEND_API_KEY: process.env.RESEND_API_KEY,
+  RESEND_API_KEY: process.env.RESEND_API_KEY || '',
   RESEND_AUDIENCE_ID: process.env.RESEND_AUDIENCE_ID || undefined,
 
   // OTP

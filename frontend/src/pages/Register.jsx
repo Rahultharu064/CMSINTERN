@@ -32,14 +32,18 @@ const Register = () => {
 
   const validate = () => {
     const next = {};
-    if (!formData.fullName.trim()) next.fullName = 'Full name is required';
-    else if (formData.fullName.trim().length < 2) next.fullName = 'Name is too short';
+    const name = formData.fullName.trim();
+    const email = formData.email.trim();
+    const phone = formData.phone.trim();
 
-    if (!formData.email.trim()) next.email = 'Email is required';
-    else if (!/\S+@\S+\.\S+/.test(formData.email)) next.email = 'Invalid email format';
+    if (!name) next.fullName = 'Full name is required';
+    else if (name.length < 2) next.fullName = 'Name is too short';
 
-    if (!formData.phone.trim()) next.phone = 'Phone number is required';
-    else if (!/^[+\d][\d\s-]{7,}$/.test(formData.phone.trim())) next.phone = 'Invalid phone format';
+    if (!email) next.email = 'Email is required';
+    else if (!/\S+@\S+\.\S+/.test(email)) next.email = 'Invalid email format';
+
+    if (!phone) next.phone = 'Phone number is required';
+    else if (!/^[+\d][\d\s()-.]{7,}$/.test(phone)) next.phone = 'Invalid phone format';
 
     if (!formData.password) next.password = 'Password is required';
     else if (formData.password.length < 8) next.password = 'Password must be at least 8 characters';
@@ -63,11 +67,18 @@ const Register = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!validate()) return;
-    const result = await dispatch(registerUser({ ...formData, role: 'PATIENT' }));
+    const trimmed = {
+      fullName: formData.fullName.trim(),
+      email: formData.email.trim().toLowerCase(),
+      phone: formData.phone.trim(),
+      password: formData.password,
+      confirmPassword: formData.confirmPassword,
+      role: 'PATIENT',
+    };
+    const result = await dispatch(registerUser(trimmed));
     if (registerUser.fulfilled.match(result)) {
-      localStorage.setItem('pending_verification_email', formData.email);
-      dispatch({ type: 'auth/clearAuth' });
-      navigate('/verify-email', { replace: true, state: { email: formData.email } });
+      localStorage.setItem('pending_verification_email', trimmed.email);
+      navigate('/verify-email', { replace: true, state: { email: trimmed.email } });
     }
   };
 
