@@ -46,6 +46,9 @@ const initialState = {
   otpSent: false,
   pendingEmail: getStoredUser()?.email || null,
   success: false,
+  debugOtp: null,
+  emailSendFailed: false,
+  resendingVerification: false,
 };
 
 export const registerUser = createAsyncThunk(
@@ -257,16 +260,36 @@ const authSlice = createSlice({
       })
       .addCase(registerUser.fulfilled, (state, action) => {
         state.isLoading = false;
-        const { user, accessToken, refreshToken } = action.payload;
-        state.user = user;
-        state.accessToken = accessToken;
-        state.refreshToken = refreshToken;
-        state.isAuthenticated = true;
-        state.isEmailVerified = user?.isEmailVerified || false;
+        const payload = action.payload || {};
+        const { user, accessToken, refreshToken, resendingVerification, emailSendFailed, debugOtp, message } = payload;
+        if (accessToken && refreshToken) {
+          state.accessToken = accessToken;
+          state.refreshToken = refreshToken;
+        }
+        if (user) {
+          state.user = user;
+          state.isEmailVerified = user.isEmailVerified || false;
+          state.pendingEmail = user.email || null;
+          localStorage.setItem('pending_verification_email', user.email || '');
+          if (accessToken && refreshToken) {
+            state.isAuthenticated = true;
+            persistAuthData(user, accessToken, refreshToken);
+          } else {
+            state.isAuthenticated = false;
+            clearAllAuthStorage();
+          }
+        }
+        state.debugOtp = debugOtp || state.debugOtp || undefined;
+        state.emailSendFailed = !!emailSendFailed;
+        state.resendingVerification = !!resendingVerification;
         state.success = true;
-        persistAuthData(user, accessToken, refreshToken);
-        state.pendingEmail = user?.email || null;
-        toast.success('Account created. Verify your email to continue.');
+        if (emailSendFailed && debugOtp) {
+          toast.success(`Account created! Email couldn't be sent — use code ${debugOtp} to verify.`);
+        } else if (resendingVerification) {
+          toast.success(message || 'Verification code resent. Please check your inbox.');
+        } else {
+          toast.success(message || 'Account created. Verify your email to continue.');
+        }
       })
       .addCase(registerUser.rejected, (state, action) => {
         state.isLoading = false;

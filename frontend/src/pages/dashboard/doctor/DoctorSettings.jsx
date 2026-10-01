@@ -1,337 +1,546 @@
-import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import toast from 'react-hot-toast';
 import {
-  FileText,
-  Search,
-  Plus,
-  ChevronRight,
-  Calendar,
-  UserCircle,
+  User,
+  Upload,
+  ShieldCheck,
+  Save,
+  KeyRound,
   Stethoscope,
-  FilePlus,
-  Pill,
-  ScanSearch,
-  ArrowUpRight,
-  Filter,
-  Download,
+  BadgeCheck,
+  Clock3,
+  Plus,
   X,
-  CheckCircle2,
+  UploadCloud,
+  Trash2,
 } from 'lucide-react';
 import SectionCard from '../../../components/sections/SectionCard';
 import StatCard from '../../../components/sections/StatCard';
+import { getMyDoctorProfile, updateDoctor } from '../../../services/doctorService.js';
+import { changePassword, getProfile, updateProfile, uploadAvatar } from '../../../services/authServices.js';
+import { getAllDepartments } from '../../../services/departmentService.js';
+import { useAppSelector } from '../../../hooks/authHooks.js';
 
-const recordKpis = [
-  { label: 'Total records', value: 482, sub: 'All consultations', tone: 'primary' },
-  { label: 'Active Rx', value: 186, sub: 'Prescriptions active', tone: 'emerald' },
-  { label: 'Pending reports', value: 12, sub: 'Lab / imaging', tone: 'amber' },
-  { label: 'This month', value: 56, sub: 'New medical entries', tone: 'sky' },
-];
+const DAYS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 
-const records = [
-  { id: 'MR-3021', patientId: 'P-2041', patient: 'Anita Shrestha', date: 'Today', type: 'Consultation', diagnosis: 'Essential hypertension - BP uncontrolled', doctor: 'Dr. Ram Sharma', prescriptions: 2, reports: 1, status: 'In progress' },
-  { id: 'MR-3020', patientId: 'P-2041', patient: 'Anita Shrestha', date: '2 weeks ago', type: 'Follow-up', diagnosis: 'BP improved (132/84), continue meds', doctor: 'Dr. Ram Sharma', prescriptions: 2, reports: 0, status: 'Closed' },
-  { id: 'MR-3019', patientId: 'P-2044', patient: 'Suresh Magar', date: 'Today', type: 'Report review', diagnosis: 'ECG: NSR, no ischemic changes', doctor: 'Dr. Ram Sharma', prescriptions: 0, reports: 3, status: 'Closed' },
-  { id: 'MR-3018', patientId: 'P-2048', patient: 'Kamal Bhandari', date: '5 days ago', type: 'Procedure note', diagnosis: 'Coronary angiography - LAD 80% lesion, stent placed', doctor: 'Dr. Ram Sharma', prescriptions: 5, reports: 4, status: 'Closed' },
-  { id: 'MR-3017', patientId: 'P-2043', patient: 'Bina Tamang', date: 'Yesterday', type: 'Consultation', diagnosis: 'MVP with mild MR, reassurance', doctor: 'Dr. Ram Sharma', prescriptions: 1, reports: 1, status: 'Closed' },
-  { id: 'MR-3016', patientId: 'P-2047', patient: 'Sarita Gurung', date: '1 week ago', type: 'Follow-up', diagnosis: 'Peripartum CMP resolved, EF 58%', doctor: 'Dr. Ram Sharma', prescriptions: 0, reports: 2, status: 'Closed' },
-  { id: 'MR-3015', patientId: 'P-2049', patient: 'Hari Sharma', date: 'Yesterday', type: 'Medication change', diagnosis: 'Switched Lisinopril → Telmisartan due to cough', doctor: 'Dr. Ram Sharma', prescriptions: 2, reports: 0, status: 'Closed' },
-];
+const appendField = (formData, key, value) => {
+  if (value === undefined || value === null || value === '') return;
+  formData.append(key, typeof value === 'object' && !(value instanceof File) ? JSON.stringify(value) : value);
+};
 
-const recordTypes = [
-  { label: 'All types', value: 'All', Icon: FileText, tone: 'bg-slate-50 text-slate-700 dark:bg-slate-800 dark:text-slate-300' },
-  { label: 'Consultations', value: 'Consultation', Icon: Stethoscope, tone: 'bg-primary-50 text-primary-700 dark:bg-primary-900/30 dark:text-primary-300' },
-  { label: 'Prescriptions', value: 'Rx', Icon: Pill, tone: 'bg-emerald-50 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300' },
-  { label: 'Lab / Imaging', value: 'Report', Icon: ScanSearch, tone: 'bg-amber-50 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300' },
-];
+const toFormData = (data, files = {}) => {
+  const fd = new FormData();
+  Object.entries(data || {}).forEach(([k, v]) => appendField(fd, k, v));
+  if (files.profilePicture) fd.append('profilePicture', files.profilePicture);
+  (files.certificates || []).forEach((f) => fd.append('certificates', f));
+  return fd;
+};
 
-const samplePrescriptions = [
-  { name: 'Telmisartan 40mg', dosage: 'Once daily', frequency: 'After breakfast', duration: '30 days', refillable: 2 },
-  { name: 'Amlodipine 5mg', dosage: '5mg', frequency: 'Once at bedtime', duration: '30 days', refillable: 2 },
-  { name: 'Atorvastatin 20mg', dosage: '20mg', frequency: 'Once at bedtime', duration: '90 days', refillable: 1 },
-];
+const defaultSlot = () => ({ id: crypto.randomUUID(), open: '09:00', close: '17:00', breakStart: '13:00', breakEnd: '14:00', on: true });
 
-const sampleReports = [
-  { name: 'ECG (Resting)', date: 'Today', status: 'Completed', file: 'ECG_MR3021.pdf' },
-  { name: 'Lipid Profile', date: '2 days ago', status: 'Completed', file: 'LIPID_2044.pdf' },
-  { name: '2D Echo', date: 'Pending', status: 'Pending', file: '—' },
-];
+const DoctorSettings = () => {
+  const navigate = useNavigate();
+  const { user } = useAppSelector((s) => s.auth);
 
-const DoctorRecords = () => {
-  const [search, setSearch] = useState('');
-  const [typeFilter, setTypeFilter] = useState('All');
-  const [createOpen, setCreateOpen] = useState(false);
-  const [selected, setSelected] = useState(records[0]);
+  const [activeTab, setActiveTab] = useState('profile');
+  const [saving, setSaving] = useState(false);
+  const [passwordLoading, setPasswordLoading] = useState(false);
 
-  const filtered = records.filter((r) => {
-    if (typeFilter !== 'All' && !r.type.includes(typeFilter) && !(typeFilter === 'Report' && r.reports > 0) && !(typeFilter === 'Rx' && r.prescriptions > 0)) return false;
-    if (!search) return true;
-    const q = search.toLowerCase();
-    return r.patient.toLowerCase().includes(q) || r.diagnosis.toLowerCase().includes(q) || r.id.toLowerCase().includes(q);
+  // Profile
+  const [profile, setProfile] = useState(null);
+  const [form, setForm] = useState({
+    fullName: '',
+    phone: '',
+    email: '',
+    address: '',
+    specialization: '',
+    licenseNumber: '',
+    qualifications: '',
+    experience: '',
+    hospital: '',
+    department: '',
+    consultationFee: '',
+    bio: '',
+    gender: '',
   });
+  const [avatarPreview, setAvatarPreview] = useState('');
+  const [avatarFile, setAvatarFile] = useState(null);
+
+  const [departments, setDepartments] = useState([]);
+
+  // Password
+  const [passwordForm, setPasswordForm] = useState({
+    currentPassword: '',
+    newPassword: '',
+    confirmPassword: '',
+  });
+
+  // Availability
+  const [slots, setSlots] = useState(() => {
+    const base = {};
+    DAYS.forEach((d) => {
+      const weekend = d === 'Saturday' ? { open: '10:00', close: '14:00', breakStart: '', breakEnd: '', on: true }
+        : d === 'Sunday' ? { open: '00:00', close: '00:00', breakStart: '', breakEnd: '', on: false }
+        : defaultSlot();
+      base[d] = { ...weekend, id: crypto.randomUUID() };
+    });
+    return base;
+  });
+
+  // Certificates
+  const [certificates, setCertificates] = useState([]); // [{id, name, file?, url}]
+  const [newCertFiles, setNewCertFiles] = useState([]);
+
+  const tabCounts = {
+    profile: 'Profile',
+    availability: 'Availability',
+    security: 'Security',
+    credentials: 'Credentials',
+  };
+
+  useEffect(() => {
+    const load = async () => {
+      try {
+        const [profileRes, me, depts] = await Promise.all([
+          getProfile().catch(() => null),
+          getMyDoctorProfile().catch(() => null),
+          getAllDepartments({ page: 1, limit: 100 }).catch(() => ({ departments: [] })),
+        ]);
+        const userObj = profileRes || me?.user || user || {};
+        setProfile({ ...(profileRes || {}), doctor: me || null });
+        setForm((f) => ({
+          ...f,
+          fullName: userObj.fullName || f.fullName,
+          phone: userObj.phone || f.phone,
+          email: userObj.email || f.email,
+          address: userObj.address || me?.address || f.address,
+          gender: userObj.gender || me?.gender || f.gender,
+          specialization: me?.specialization || me?.specialty || f.specialization,
+          licenseNumber: me?.licenseNumber || me?.license || f.licenseNumber,
+          qualifications: Array.isArray(me?.qualifications) ? me.qualifications.join(', ') : me?.qualifications || f.qualifications,
+          experience: String(me?.experienceYears || me?.experience || f.experience),
+          hospital: me?.hospital || me?.clinic || f.hospital,
+          department: me?.departmentId || me?.department?.id || f.department,
+          consultationFee: String(me?.consultationFee || me?.fee || f.consultationFee),
+          bio: me?.bio || me?.about || f.bio,
+        }));
+        if (profileRes?.avatar || userObj?.avatar || me?.profilePicture) {
+          setAvatarPreview(profileRes?.avatar || userObj?.avatar || me?.profilePicture || '');
+        }
+        if (Array.isArray(me?.certificates)) {
+          setCertificates(
+            me.certificates.map((c, i) => ({
+              id: `existing-${i}`,
+              name: typeof c === 'string' ? `Certificate ${i + 1}` : c.name || `Certificate ${i + 1}`,
+              url: typeof c === 'string' ? c : c.url || c.file || '',
+            }))
+          );
+        }
+        if (me?.availability && typeof me.availability === 'object') {
+          setSlots((prev) => {
+            const next = { ...prev };
+            DAYS.forEach((d) => {
+              const src = me.availability[d] || me.availability[d.toLowerCase()];
+              if (src) next[d] = { ...next[d], ...src, id: next[d].id };
+            });
+            return next;
+          });
+        }
+        setDepartments(depts?.departments || depts || []);
+      } catch (err) {
+        toast.error(err?.response?.data?.message || 'Failed to load settings');
+      }
+    };
+    load();
+  }, [user]);
+
+  const setField = (k, v) => setForm((f) => ({ ...f, [k]: v }));
+
+  const handleAvatarPick = (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setAvatarFile(file);
+    setAvatarPreview(URL.createObjectURL(file));
+  };
+
+  const handleSaveProfile = async () => {
+    setSaving(true);
+    try {
+      if (avatarFile) {
+        await uploadAvatar(avatarFile);
+      }
+      const userPayload = {};
+      ['fullName', 'phone', 'address', 'gender'].forEach((k) => {
+        if (form[k]) userPayload[k] = form[k];
+      });
+      await updateProfile(userPayload);
+
+      const doctorId = profile?.doctor?.id;
+      if (doctorId) {
+        const doctorPayload = {
+          specialization: form.specialization || undefined,
+          licenseNumber: form.licenseNumber || undefined,
+          qualifications: form.qualifications ? form.qualifications.split(',').map((s) => s.trim()).filter(Boolean) : undefined,
+          experienceYears: form.experience ? Number(form.experience) : undefined,
+          hospital: form.hospital || undefined,
+          departmentId: form.department || undefined,
+          consultationFee: form.consultationFee ? Number(form.consultationFee) : undefined,
+          bio: form.bio || undefined,
+          availability: slots,
+        };
+        const fd = toFormData(doctorPayload, { certificates: newCertFiles });
+        await updateDoctor(doctorId, fd, { certificates: newCertFiles });
+      } else if (newCertFiles.length > 0 || Object.keys(slots).length) {
+        toast("Profile saved. Doctor record will sync once onboarding is approved.", { icon: 'ℹ️' });
+      }
+      toast.success('Profile saved successfully');
+      setAvatarFile(null);
+      setNewCertFiles([]);
+    } catch (err) {
+      toast.error(err?.response?.data?.message || 'Failed to save profile');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleChangePassword = async () => {
+    if (!passwordForm.currentPassword || !passwordForm.newPassword) {
+      toast.error('Fill in all password fields.');
+      return;
+    }
+    if (passwordForm.newPassword.length < 8) {
+      toast.error('New password must be at least 8 characters.');
+      return;
+    }
+    if (passwordForm.newPassword !== passwordForm.confirmPassword) {
+      toast.error('Passwords do not match.');
+      return;
+    }
+    setPasswordLoading(true);
+    try {
+      await changePassword(passwordForm.currentPassword, passwordForm.newPassword, passwordForm.confirmPassword);
+      setPasswordForm({ currentPassword: '', newPassword: '', confirmPassword: '' });
+      toast.success('Password changed successfully');
+    } catch (err) {
+      toast.error(err?.response?.data?.message || 'Failed to change password');
+    } finally {
+      setPasswordLoading(false);
+    }
+  };
+
+  const handleCertFiles = (e) => {
+    const files = Array.from(e.target.files || []);
+    setNewCertFiles((list) => [...list, ...files]);
+    files.forEach((f) => setCertificates((c) => [...c, { id: `new-${Date.now()}-${f.name}`, name: f.name, file: f }]));
+    e.target.value = '';
+  };
+  const removeCert = (id) => {
+    setCertificates((c) => c.filter((x) => x.id !== id));
+    setNewCertFiles((list) => list.filter((f) => !(`new-${Date.now()}-${f.name}` === id)));
+  };
+
+  const toggleDay = (day) => setSlots((s) => ({ ...s, [day]: { ...s[day], on: !s[day].on } }));
+  const setSlotField = (day, k, v) => setSlots((s) => ({ ...s, [day]: { ...s[day], [k]: v } }));
+
+  const overviewKpis = [
+    { label: 'Account role', value: profile?.user?.role || 'Doctor', sub: 'Signed in identity', icon: ShieldCheck, tone: 'primary' },
+    { label: 'Phone', value: form.phone || 'Not set', sub: 'Contact on record', icon: User, tone: 'sky' },
+    { label: 'Consultation fee', value: form.consultationFee ? `Rs. ${Number(form.consultationFee).toLocaleString('en-IN')}` : 'Not set', sub: 'Per visit rate', icon: Stethoscope, tone: 'emerald' },
+    { label: 'License', value: form.licenseNumber ? (form.licenseNumber.length > 16 ? form.licenseNumber.slice(0, 14) + '…' : form.licenseNumber) : 'Not set', sub: 'Medical council', icon: BadgeCheck, tone: 'amber' },
+  ];
 
   return (
     <div className="space-y-6">
-      {/* KPI strip */}
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        {recordKpis.map((k) => (
-          <StatCard key={k.label} icon={FileText} label={k.label} value={k.value} sub={k.sub} tone={k.tone} />
+        {overviewKpis.map((k) => (
+          <StatCard key={k.label} icon={k.icon} label={k.label} value={k.value} sub={k.sub} tone={k.tone} />
         ))}
       </div>
 
-      {/* Toolbar */}
-      <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
-        <div className="flex flex-wrap items-center gap-2">
-          <div className="relative">
-            <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
-            <input
-              type="text"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              placeholder="Search records, patients, diagnosis…"
-              className="w-72 rounded-xl border border-slate-200 bg-white py-2 pl-9 pr-3 text-sm text-slate-700 outline-none transition-colors focus:border-primary-400 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-200"
-            />
-          </div>
-          <div className="inline-flex rounded-xl border border-slate-200 bg-white p-1 dark:border-slate-800 dark:bg-slate-900">
-            {recordTypes.map((t) => (
-              <button
-                key={t.value}
-                onClick={() => setTypeFilter(t.value)}
-                className={`flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-semibold transition-colors ${
-                  typeFilter === t.value ? 'bg-primary-600 text-white shadow-sm' : 'text-slate-500 hover:text-slate-800 dark:hover:text-white'
-                }`}
-              >
-                <t.Icon className="h-3.5 w-3.5" /> {t.label}
-              </button>
-            ))}
-          </div>
-        </div>
-        <div className="flex items-center gap-2">
-          <button className="flex items-center gap-1.5 rounded-xl border border-slate-200 px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50 dark:border-slate-800 dark:text-slate-300 dark:hover:bg-slate-900">
-            <Filter className="h-4 w-4" /> More filters
+      <div className="flex flex-wrap items-center gap-1 rounded-xl border border-slate-200 bg-white p-1 dark:border-slate-800 dark:bg-slate-900">
+        {Object.entries(tabCounts).map(([key, label]) => (
+          <button
+            key={key}
+            onClick={() => setActiveTab(key)}
+            className={`rounded-lg px-3.5 py-1.5 text-xs font-semibold transition-colors ${
+              activeTab === key ? 'bg-primary-600 text-white shadow-sm' : 'text-slate-500 hover:text-slate-800 dark:hover:text-white'
+            }`}
+          >
+            {label}
           </button>
-          <button onClick={() => setCreateOpen(true)} className="flex items-center gap-1.5 rounded-xl bg-primary-600 px-3 py-2 text-xs font-semibold text-white hover:bg-primary-700 shadow-sm">
-            <Plus className="h-4 w-4" /> New record
+        ))}
+        <div className="ml-auto pr-2">
+          <button
+            onClick={handleSaveProfile}
+            disabled={saving}
+            className="inline-flex items-center gap-1.5 rounded-lg bg-primary-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-primary-700 disabled:opacity-50"
+          >
+            <Save className="h-3.5 w-3.5" /> {saving ? 'Saving…' : 'Save changes'}
           </button>
         </div>
       </div>
 
-      <div className="grid gap-6 lg:grid-cols-3">
-        {/* Records list */}
-        <SectionCard className="lg:col-span-2" title={`Medical records (${filtered.length})`} subtitle="Click to view full record" bodyClassName="p-0">
-          {filtered.length === 0 ? (
-            <div className="p-10 text-center text-sm text-slate-400">
-              <FileText className="mx-auto h-10 w-10 mb-2 text-slate-300 dark:text-slate-700" />
-              No records match your filters.
+      {/* ============ Profile ============ */}
+      {activeTab === 'profile' && (
+        <div className="grid gap-6 lg:grid-cols-3">
+          <SectionCard title="Avatar" subtitle="Upload a professional headshot">
+            <div className="flex flex-col items-center gap-4">
+              <div className="relative h-32 w-32 overflow-hidden rounded-full bg-gradient-to-br from-primary-400 to-primary-700 ring-4 ring-slate-100 dark:ring-slate-800">
+                {avatarPreview ? (
+                  <img src={avatarPreview} alt="avatar" className="h-full w-full object-cover" />
+                ) : (
+                  <div className="flex h-full w-full items-center justify-center font-display text-3xl font-extrabold text-white">
+                    {(form.fullName || user?.fullName || 'DR').split(' ').map((n) => n[0]).join('').slice(0, 2).toUpperCase()}
+                  </div>
+                )}
+              </div>
+              <label className="inline-flex cursor-pointer items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-200">
+                <Upload className="h-4 w-4" /> Upload photo
+                <input type="file" accept="image/*" onChange={handleAvatarPick} className="hidden" />
+              </label>
+              <p className="text-center text-xs text-slate-400">PNG, JPG up to 5MB. Square crop recommended.</p>
+            </div>
+          </SectionCard>
+
+          <SectionCard className="lg:col-span-2" title="Personal & professional info" subtitle="Used on your public doctor profile and patient receipts">
+            <div className="grid gap-4 sm:grid-cols-2">
+              <label className="block">
+                <span className="mb-1 block text-xs font-semibold text-slate-600 dark:text-slate-400">Full name</span>
+                <input className="input w-full" value={form.fullName} onChange={(e) => setField('fullName', e.target.value)} />
+              </label>
+              <label className="block">
+                <span className="mb-1 block text-xs font-semibold text-slate-600 dark:text-slate-400">Email</span>
+                <input className="input w-full" value={form.email} disabled placeholder="Login email - contact admin to change" />
+              </label>
+              <label className="block">
+                <span className="mb-1 block text-xs font-semibold text-slate-600 dark:text-slate-400">Phone</span>
+                <input className="input w-full" value={form.phone} onChange={(e) => setField('phone', e.target.value)} placeholder="+977 98XXXXXXXX" />
+              </label>
+              <label className="block">
+                <span className="mb-1 block text-xs font-semibold text-slate-600 dark:text-slate-400">Gender</span>
+                <select className="input w-full" value={form.gender} onChange={(e) => setField('gender', e.target.value)}>
+                  <option value="">Select</option>
+                  <option>Male</option><option>Female</option><option>Other</option>
+                </select>
+              </label>
+              <label className="block sm:col-span-2">
+                <span className="mb-1 block text-xs font-semibold text-slate-600 dark:text-slate-400">Address</span>
+                <input className="input w-full" value={form.address} onChange={(e) => setField('address', e.target.value)} placeholder="Clinic / street address" />
+              </label>
+
+              <div className="h-px sm:col-span-2 border-t border-slate-100 dark:border-slate-800" />
+
+              <label className="block">
+                <span className="mb-1 block text-xs font-semibold text-slate-600 dark:text-slate-400">Specialty</span>
+                <input className="input w-full" value={form.specialization} onChange={(e) => setField('specialization', e.target.value)} placeholder="e.g. Cardiology" />
+              </label>
+              <label className="block">
+                <span className="mb-1 block text-xs font-semibold text-slate-600 dark:text-slate-400">License number</span>
+                <input className="input w-full" value={form.licenseNumber} onChange={(e) => setField('licenseNumber', e.target.value)} />
+              </label>
+              <label className="block sm:col-span-2">
+                <span className="mb-1 block text-xs font-semibold text-slate-600 dark:text-slate-400">Qualifications</span>
+                <input className="input w-full" value={form.qualifications} onChange={(e) => setField('qualifications', e.target.value)} placeholder="MBBS, MD (Internal Med) — comma-separated" />
+              </label>
+              <label className="block">
+                <span className="mb-1 block text-xs font-semibold text-slate-600 dark:text-slate-400">Experience (years)</span>
+                <input type="number" min="0" className="input w-full" value={form.experience} onChange={(e) => setField('experience', e.target.value)} />
+              </label>
+              <label className="block">
+                <span className="mb-1 block text-xs font-semibold text-slate-600 dark:text-slate-400">Hospital / clinic</span>
+                <input className="input w-full" value={form.hospital} onChange={(e) => setField('hospital', e.target.value)} placeholder="BishwasSetu Teaching Hospital" />
+              </label>
+              <label className="block">
+                <span className="mb-1 block text-xs font-semibold text-slate-600 dark:text-slate-400">Department</span>
+                <select className="input w-full" value={form.department} onChange={(e) => setField('department', e.target.value)}>
+                  <option value="">Select</option>
+                  {departments.map((d) => <option key={d.id} value={d.id}>{d.name}</option>)}
+                </select>
+              </label>
+              <label className="block">
+                <span className="mb-1 block text-xs font-semibold text-slate-600 dark:text-slate-400">Consultation fee (NPR)</span>
+                <input type="number" min="0" className="input w-full" value={form.consultationFee} onChange={(e) => setField('consultationFee', e.target.value)} placeholder="1500" />
+              </label>
+              <label className="block sm:col-span-2">
+                <span className="mb-1 block text-xs font-semibold text-slate-600 dark:text-slate-400">Professional bio</span>
+                <textarea rows={4} maxLength={500} className="input w-full" value={form.bio} onChange={(e) => setField('bio', e.target.value)} placeholder="Short paragraph patients will see on your profile." />
+                <p className="mt-1 text-right text-[10px] text-slate-400">{(form.bio || '').length}/500</p>
+              </label>
+            </div>
+          </SectionCard>
+        </div>
+      )}
+
+      {/* ============ Availability ============ */}
+      {activeTab === 'availability' && (
+        <SectionCard title="Weekly consultation hours" subtitle="Used by reception to book appointments and shown to patients on public profiles">
+          <div className="space-y-3">
+            {DAYS.map((day) => {
+              const s = slots[day];
+              const isWeekend = day === 'Saturday' || day === 'Sunday';
+              return (
+                <div key={day} className={`rounded-xl border p-4 transition-colors ${s.on ? 'border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900' : 'border-slate-200/70 bg-slate-50 dark:border-slate-800/60 dark:bg-slate-900/40'}`}>
+                  <div className="flex items-center justify-between gap-3">
+                    <label className="flex cursor-pointer items-center gap-2">
+                      <input type="checkbox" checked={s.on} onChange={() => toggleDay(day)} className="h-4 w-4 accent-primary-600" />
+                      <span className="inline-flex items-center gap-1.5 text-sm font-bold text-slate-800 dark:text-slate-100">
+                        <Clock3 className="h-4 w-4 text-slate-400" /> {day}
+                        {isWeekend && <span className="rounded-md bg-amber-50 px-1.5 py-0.5 text-[10px] font-semibold text-amber-700 dark:bg-amber-900/30 dark:text-amber-300">Weekend</span>}
+                      </span>
+                    </label>
+                    {s.on && (
+                      <button onClick={() => setSlots((ss) => ({ ...ss, [day]: { ...defaultSlot(), id: ss[day].id, on: true } }))} className="text-[11px] font-semibold text-primary-700 hover:underline dark:text-primary-300">
+                        Reset
+                      </button>
+                    )}
+                  </div>
+                  {s.on && (
+                    <div className="mt-3 grid gap-3 sm:grid-cols-4">
+                      <label className="block">
+                        <span className="mb-1 block text-[11px] font-semibold text-slate-500">Open</span>
+                        <input type="time" className="input w-full" value={s.open} onChange={(e) => setSlotField(day, 'open', e.target.value)} />
+                      </label>
+                      <label className="block">
+                        <span className="mb-1 block text-[11px] font-semibold text-slate-500">Close</span>
+                        <input type="time" className="input w-full" value={s.close} onChange={(e) => setSlotField(day, 'close', e.target.value)} />
+                      </label>
+                      <label className="block">
+                        <span className="mb-1 block text-[11px] font-semibold text-slate-500">Break start</span>
+                        <input type="time" className="input w-full" value={s.breakStart} onChange={(e) => setSlotField(day, 'breakStart', e.target.value)} />
+                      </label>
+                      <label className="block">
+                        <span className="mb-1 block text-[11px] font-semibold text-slate-500">Break end</span>
+                        <input type="time" className="input w-full" value={s.breakEnd} onChange={(e) => setSlotField(day, 'breakEnd', e.target.value)} />
+                      </label>
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        </SectionCard>
+      )}
+
+      {/* ============ Security ============ */}
+      {activeTab === 'security' && (
+        <div className="grid gap-6 lg:grid-cols-3">
+          <SectionCard className="lg:col-span-2" title="Change password" subtitle="Use a strong password — minimum 8 characters, mix of letters, numbers and symbols">
+            <div className="space-y-4 sm:max-w-lg">
+              <label className="block">
+                <span className="mb-1 flex items-center gap-1.5 text-xs font-semibold text-slate-600 dark:text-slate-400"><KeyRound className="h-3.5 w-3.5" /> Current password</span>
+                <input type="password" autoComplete="current-password" className="input w-full" value={passwordForm.currentPassword} onChange={(e) => setPasswordForm((p) => ({ ...p, currentPassword: e.target.value }))} />
+              </label>
+              <label className="block">
+                <span className="mb-1 block text-xs font-semibold text-slate-600 dark:text-slate-400">New password</span>
+                <input type="password" autoComplete="new-password" className="input w-full" value={passwordForm.newPassword} onChange={(e) => setPasswordForm((p) => ({ ...p, newPassword: e.target.value }))} />
+              </label>
+              <label className="block">
+                <span className="mb-1 block text-xs font-semibold text-slate-600 dark:text-slate-400">Confirm new password</span>
+                <input type="password" autoComplete="new-password" className="input w-full" value={passwordForm.confirmPassword} onChange={(e) => setPasswordForm((p) => ({ ...p, confirmPassword: e.target.value }))} />
+              </label>
+              <div className="pt-2">
+                <button onClick={handleChangePassword} disabled={passwordLoading} className="inline-flex items-center gap-1.5 rounded-xl bg-primary-600 px-4 py-2 text-xs font-semibold text-white hover:bg-primary-700 disabled:opacity-50">
+                  <ShieldCheck className="h-4 w-4" /> {passwordLoading ? 'Updating…' : 'Update password'}
+                </button>
+              </div>
+            </div>
+          </SectionCard>
+          <SectionCard title="Account info" subtitle="Identity details on file">
+            <dl className="space-y-3 text-sm">
+              <div className="flex items-start justify-between gap-2">
+                <dt className="text-xs font-semibold text-slate-500 uppercase tracking-wide">Role</dt>
+                <dd className="rounded-md bg-primary-50 px-2 py-0.5 text-[11px] font-bold text-primary-700 dark:bg-primary-900/30 dark:text-primary-300">Doctor</dd>
+              </div>
+              <div className="flex items-start justify-between gap-2">
+                <dt className="text-xs font-semibold text-slate-500 uppercase tracking-wide">User ID</dt>
+                <dd className="font-mono text-[11px] font-semibold text-slate-700 dark:text-slate-200">{profile?.id || user?.id || '—'}</dd>
+              </div>
+              <div>
+                <dt className="text-xs font-semibold text-slate-500 uppercase tracking-wide">Email</dt>
+                <dd className="mt-1 break-all text-slate-800 dark:text-slate-100">{form.email || '—'}</dd>
+              </div>
+              <div>
+                <dt className="text-xs font-semibold text-slate-500 uppercase tracking-wide">Last login</dt>
+                <dd className="mt-1 text-xs text-slate-600 dark:text-slate-300">Now</dd>
+              </div>
+            </dl>
+            <div className="mt-5 rounded-xl border border-dashed border-slate-300 p-4 text-xs text-slate-500 dark:border-slate-700 dark:text-slate-400">
+              Need to change your login email, close your account, or escalate something? Contact the clinic admin desk.
+            </div>
+          </SectionCard>
+        </div>
+      )}
+
+      {/* ============ Credentials ============ */}
+      {activeTab === 'credentials' && (
+        <SectionCard
+          title="Certificates & credentials"
+          subtitle="Uploaded documents are shared with the clinic to verify and keep on file. Attachments up to 10MB each (PDF / image)."
+          action={
+            <label className="inline-flex cursor-pointer items-center gap-1.5 rounded-xl bg-primary-600 px-3 py-2 text-xs font-semibold text-white hover:bg-primary-700">
+              <Plus className="h-4 w-4" /> Upload certificates
+              <input type="file" accept="application/pdf,image/*" multiple onChange={handleCertFiles} className="hidden" />
+            </label>
+          }
+        >
+          {certificates.length === 0 ? (
+            <div className="rounded-2xl border border-dashed border-slate-300 p-10 text-center text-sm text-slate-400 dark:border-slate-700">
+              <UploadCloud className="mx-auto mb-3 h-10 w-10 text-slate-300 dark:text-slate-700" />
+              No certificates yet — upload at least 1 license / degree for verification.
             </div>
           ) : (
-            <ul className="divide-y divide-slate-50 dark:divide-slate-800/70">
-              {filtered.map((r) => (
-                <li
-                  key={r.id}
-                  onClick={() => setSelected(r)}
-                  className={`cursor-pointer p-4 transition-colors hover:bg-slate-50 dark:hover:bg-slate-800/40 ${selected?.id === r.id ? 'bg-primary-50/60 dark:bg-primary-900/15' : ''}`}
-                >
-                  <div className="flex items-start gap-4">
-                    <span className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ${
-                      r.type.includes('Consult') ? 'bg-primary-50 text-primary-700 dark:bg-primary-900/30 dark:text-primary-300' :
-                      r.type.includes('Procedure') ? 'bg-rose-50 text-rose-700 dark:bg-rose-900/30 dark:text-rose-300' :
-                      r.type.includes('Report') ? 'bg-amber-50 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300' :
-                      'bg-sky-50 text-sky-700 dark:bg-sky-900/30 dark:text-sky-300'
-                    }`}>
-                      {r.type.includes('Report') ? <ScanSearch className="h-4.5 w-4.5" /> :
-                       r.type.includes('Procedure') ? <Stethoscope className="h-4.5 w-4.5" /> :
-                       r.type.includes('Follow') || r.type.includes('Medication') ? <Pill className="h-4.5 w-4.5" /> :
-                       <FileText className="h-4.5 w-4.5" />}
-                    </span>
+            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+              {certificates.map((c) => (
+                <div key={c.id} className="group rounded-xl border border-slate-200 bg-white p-4 dark:border-slate-800 dark:bg-slate-900">
+                  <div className="flex items-start justify-between gap-3">
                     <div className="min-w-0 flex-1">
-                      <div className="flex items-center justify-between gap-3">
-                        <div className="min-w-0">
-                          <div className="flex items-center gap-2">
-                            <span className="font-mono text-[11px] font-bold text-slate-500">{r.id}</span>
-                            <span className="rounded-md bg-slate-100 px-1.5 py-0.5 text-[10px] font-semibold text-slate-700 dark:bg-slate-800 dark:text-slate-300">{r.type}</span>
-                            <span className={`rounded-md px-1.5 py-0.5 text-[10px] font-semibold ${
-                              r.status === 'In progress' ? 'bg-amber-50 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300' :
-                              'bg-emerald-50 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300'
-                            }`}>{r.status}</span>
-                          </div>
-                          <p className="mt-1 font-semibold text-slate-900 dark:text-white">{r.patient}</p>
-                        </div>
-                        <div className="shrink-0 text-right">
-                          <p className="text-xs font-semibold text-slate-700 dark:text-slate-200">{r.date}</p>
-                          <p className="text-[11px] text-slate-400 flex items-center gap-1 justify-end">
-                            {r.prescriptions > 0 && <span className="flex items-center gap-0.5"><Pill className="h-3 w-3" /> {r.prescriptions}</span>}
-                            {r.reports > 0 && <span className="flex items-center gap-0.5"><ScanSearch className="h-3 w-3" /> {r.reports}</span>}
-                          </p>
-                        </div>
-                      </div>
-                      <p className="mt-1 text-xs text-slate-600 dark:text-slate-400 line-clamp-2"><strong>Diagnosis:</strong> {r.diagnosis}</p>
+                      <p className="truncate text-sm font-semibold text-slate-900 dark:text-white">{c.name}</p>
+                      <p className="mt-0.5 text-[11px] text-slate-500">{c.file ? 'New — pending save' : c.url ? 'On file' : '—'}</p>
                     </div>
+                    <button onClick={() => removeCert(c.id)} className="rounded-lg p-1 text-slate-400 hover:bg-rose-50 hover:text-rose-600 dark:hover:bg-rose-900/20 dark:hover:text-rose-300">
+                      <X className="h-4 w-4" />
+                    </button>
                   </div>
-                </li>
+                  <div className="mt-3 flex gap-2">
+                    {c.url && (
+                      <a href={c.url} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 rounded-lg border border-slate-200 px-2.5 py-1.5 text-[11px] font-semibold text-slate-700 hover:bg-slate-50 dark:border-slate-800 dark:text-slate-200 dark:hover:bg-slate-800">
+                        <Upload className="h-3.5 w-3.5" /> View
+                      </a>
+                    )}
+                    {c.file && (
+                      <span className="inline-flex items-center gap-1 rounded-lg bg-emerald-50 px-2.5 py-1.5 text-[11px] font-semibold text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300">
+                        <BadgeCheck className="h-3.5 w-3.5" /> New upload
+                      </span>
+                    )}
+                  </div>
+                </div>
               ))}
-            </ul>
-          )}
-        </SectionCard>
-
-        {/* Selected record detail */}
-        <SectionCard title={selected ? selected.id : 'Record details'} subtitle={selected ? `${selected.patient} · ${selected.date}` : 'Select a record'} bodyClassName="p-0">
-          {!selected ? (
-            <div className="p-10 text-center text-sm text-slate-400">
-              <FileText className="mx-auto h-10 w-10 mb-2 text-slate-300 dark:text-slate-700" />
-              Select a record to view full chart data.
             </div>
-          ) : (
-            <div className="divide-y divide-slate-50 dark:divide-slate-800/70">
-              <div className="p-5">
-                <div className="flex items-center gap-3">
-                  <span className="flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br from-primary-400 to-primary-600 font-display text-xs font-extrabold text-white">
-                    {selected.patient.split(' ').map((n) => n[0]).join('').slice(0, 2)}
-                  </span>
-                  <div>
-                    <p className="font-semibold text-slate-900 dark:text-white">{selected.patient}</p>
-                    <p className="text-xs text-slate-500 flex items-center gap-1.5">
-                      <UserCircle className="h-3 w-3" /> {selected.patientId}
-                    </p>
-                  </div>
+          )}
+          {newCertFiles.length > 0 && (
+            <div className="mt-4 rounded-xl border border-primary-200 bg-primary-50/60 p-4 text-xs text-primary-800 dark:border-primary-900/50 dark:bg-primary-900/10 dark:text-primary-200">
+              <div className="flex items-center justify-between gap-3">
+                <div>
+                  <p className="font-semibold">Pending changes</p>
+                  <p className="mt-0.5 text-[11px] opacity-90">{newCertFiles.length} new certificate file(s) will be uploaded when you click <strong>Save changes</strong>.</p>
                 </div>
-                <div className="mt-4 rounded-xl bg-slate-50 p-4 dark:bg-slate-800/60">
-                  <div className="flex items-center justify-between">
-                    <p className="text-xs font-bold text-slate-500 uppercase tracking-wide">Diagnosis summary</p>
-                    <span className="text-[11px] text-slate-400 flex items-center gap-1">
-                      <Calendar className="h-3 w-3" /> {selected.date}
-                    </span>
-                  </div>
-                  <p className="mt-2 text-sm leading-snug text-slate-800 dark:text-slate-200">{selected.diagnosis}</p>
-                </div>
-              </div>
-
-              {/* Prescriptions */}
-              <div className="p-5">
-                <div className="flex items-center justify-between">
-                  <p className="text-xs font-bold text-slate-500 uppercase tracking-wide flex items-center gap-1.5">
-                    <Pill className="h-3.5 w-3.5" /> Prescriptions ({samplePrescriptions.length})
-                  </p>
-                  <Link to="#" className="text-[11px] font-bold text-primary-700 hover:underline dark:text-primary-300 flex items-center gap-1">
-                    Print <Download className="h-3 w-3" />
-                  </Link>
-                </div>
-                <div className="mt-3 space-y-2">
-                  {samplePrescriptions.map((rx, idx) => (
-                    <div key={idx} className="rounded-xl border border-slate-200 bg-white p-3 dark:border-slate-800 dark:bg-slate-900">
-                      <div className="flex items-start justify-between gap-3">
-                        <div>
-                          <p className="text-sm font-semibold text-slate-900 dark:text-white">{rx.name}</p>
-                          <p className="text-xs text-slate-500">{rx.dosage} · {rx.frequency} · {rx.duration}</p>
-                        </div>
-                        {rx.refillable > 0 && (
-                          <span className="rounded-md bg-emerald-50 px-2 py-0.5 text-[10px] font-bold text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300">
-                            {rx.refillable} refill
-                          </span>
-                        )}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              {/* Reports */}
-              <div className="p-5">
-                <p className="text-xs font-bold text-slate-500 uppercase tracking-wide flex items-center gap-1.5">
-                  <ScanSearch className="h-3.5 w-3.5" /> Reports & investigations ({sampleReports.length})
-                </p>
-                <div className="mt-3 space-y-2">
-                  {sampleReports.map((r, idx) => (
-                    <div key={idx} className="flex items-center justify-between rounded-xl border border-slate-200 bg-white p-3 dark:border-slate-800 dark:bg-slate-900">
-                      <div>
-                        <p className="text-sm font-semibold text-slate-900 dark:text-white">{r.name}</p>
-                        <p className="text-xs text-slate-500">{r.date} · {r.file}</p>
-                      </div>
-                      <div className="flex items-center gap-1.5">
-                        <span className={`rounded-md px-2 py-0.5 text-[10px] font-bold ${
-                          r.status === 'Completed' ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300' :
-                          'bg-amber-50 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300'
-                        }`}>{r.status}</span>
-                        {r.status === 'Completed' && (
-                          <button className="flex items-center gap-1 rounded-lg bg-slate-50 px-2 py-1 text-[11px] font-semibold text-slate-700 hover:bg-slate-100 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700">
-                            <ArrowUpRight className="h-3 w-3" /> View
-                          </button>
-                        )}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              {/* Action footer */}
-              <div className="p-4 flex flex-wrap items-center gap-2 bg-slate-50/50 dark:bg-slate-900/50">
-                <button className="flex items-center gap-1.5 rounded-lg bg-primary-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-primary-700">
-                  <FilePlus className="h-3.5 w-3.5" /> Add prescription
+                <button
+                  onClick={() => {
+                    setCertificates((c) => c.filter((x) => !x.file));
+                    setNewCertFiles([]);
+                  }}
+                  className="inline-flex items-center gap-1 rounded-lg bg-white px-2.5 py-1.5 text-[11px] font-semibold text-primary-800 hover:bg-primary-50 dark:bg-slate-900 dark:text-primary-200 dark:hover:bg-slate-800"
+                >
+                  <Trash2 className="h-3.5 w-3.5" /> Discard new
                 </button>
-                <button className="flex items-center gap-1.5 rounded-lg border border-slate-200 px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-white dark:border-slate-800 dark:text-slate-300 dark:hover:bg-slate-900">
-                  <ScanSearch className="h-3.5 w-3.5" /> Order test
-                </button>
-                <Link to="/doctor/patients" className="ml-auto text-xs font-bold text-primary-700 hover:underline dark:text-primary-300 flex items-center gap-1">
-                  Full patient chart <ChevronRight className="h-3.5 w-3.5" />
-                </Link>
               </div>
             </div>
           )}
         </SectionCard>
-      </div>
-
-      {/* New record modal */}
-      {createOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 p-4 backdrop-blur-sm">
-          <div className="max-h-[90vh] w-full max-w-xl overflow-y-auto animate-in fade-in zoom-in-95 rounded-2xl border border-slate-200 bg-white p-6 shadow-2xl dark:border-slate-800 dark:bg-slate-900">
-            <div className="flex items-center justify-between border-b border-slate-100 pb-4 dark:border-slate-800">
-              <div>
-                <h3 className="font-display text-lg font-bold text-slate-900 dark:text-white">Create Medical Record</h3>
-                <p className="text-xs text-slate-500">Add a new consultation note or encounter.</p>
-              </div>
-              <button onClick={() => setCreateOpen(false)} className="rounded-lg p-1 text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800">
-                <X className="h-5 w-5" />
-              </button>
-            </div>
-            <div className="mt-4 space-y-3 text-sm">
-              <div>
-                <label className="mb-1 block text-xs font-semibold text-slate-600 dark:text-slate-400">Patient</label>
-                <select className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 outline-none focus:border-primary-500 dark:border-slate-800 dark:bg-slate-950 dark:text-white">
-                  <option>Anita Shrestha (P-2041)</option>
-                  <option>Prakash Rai (P-2042)</option>
-                  <option>Suresh Magar (P-2044)</option>
-                  <option>Kamal Bhandari (P-2048)</option>
-                </select>
-              </div>
-              <div>
-                <label className="mb-1 block text-xs font-semibold text-slate-600 dark:text-slate-400">Visit type</label>
-                <select className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 outline-none focus:border-primary-500 dark:border-slate-800 dark:bg-slate-950 dark:text-white">
-                  <option>Consultation</option><option>Follow-up</option><option>Report review</option><option>Procedure note</option>
-                </select>
-              </div>
-              <div>
-                <label className="mb-1 block text-xs font-semibold text-slate-600 dark:text-slate-400">Chief complaints / Symptoms</label>
-                <textarea rows={2} placeholder="e.g. Chest pain on exertion x 3 days" className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 outline-none focus:border-primary-500 dark:border-slate-800 dark:bg-slate-950 dark:text-white" />
-              </div>
-              <div>
-                <label className="mb-1 block text-xs font-semibold text-slate-600 dark:text-slate-400">Diagnosis</label>
-                <textarea rows={2} placeholder="Working diagnosis, assessment & plan" className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 outline-none focus:border-primary-500 dark:border-slate-800 dark:bg-slate-950 dark:text-white" />
-              </div>
-              <div>
-                <label className="mb-1 block text-xs font-semibold text-slate-600 dark:text-slate-400">Notes / Clinical observations</label>
-                <textarea rows={3} placeholder="BP, HR, exam findings, discussion points…" className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 outline-none focus:border-primary-500 dark:border-slate-800 dark:bg-slate-950 dark:text-white" />
-              </div>
-            </div>
-            <div className="mt-5 flex items-center justify-end gap-2 border-t border-slate-100 pt-4 dark:border-slate-800">
-              <button onClick={() => setCreateOpen(false)} className="rounded-xl border border-slate-200 px-4 py-2 text-xs font-semibold text-slate-600 dark:border-slate-800 dark:text-slate-300">Cancel</button>
-              <button onClick={() => setCreateOpen(false)} className="flex items-center gap-1.5 rounded-xl bg-primary-600 px-4 py-2 text-xs font-semibold text-white hover:bg-primary-700">
-                <CheckCircle2 className="h-4 w-4" /> Save record
-              </button>
-            </div>
-          </div>
-        </div>
       )}
     </div>
   );
 };
 
-export default DoctorRecords;
+export default DoctorSettings;

@@ -42,26 +42,57 @@ export const register = async (req, res) => {
 
         const result = await authService.registerUser(userData);
 
-        // Set cookies
-        setAccessTokenCookie(res, result.accessToken);
-        setRefreshTokenCookie(res, result.refreshToken);
+        if (result.resendingVerification) {
+            clearTokens(res);
+            return successResponse(res, result, result.message || MESSAGES.USER_REGISTERED || 'Verification code resent');
+        }
 
-        return createdResponse(res, result, MESSAGES.USER_REGISTERED);
+        if (!result.emailSendFailed && result.accessToken && result.refreshToken) {
+            setAccessTokenCookie(res, result.accessToken);
+            setRefreshTokenCookie(res, result.refreshToken);
+        } else {
+            clearTokens(res);
+        }
+
+        const statusCode = result.emailSendFailed ? 202 : 201;
+        return res.status(statusCode).json({
+            success: true,
+            message: result.message || MESSAGES.USER_REGISTERED || 'Account created successfully',
+            data: {
+                user: result.user,
+                needsEmailVerification: true,
+                emailSendFailed: !!result.emailSendFailed,
+                resendingVerification: !!result.resendingVerification,
+                debugOtp: result.debugOtp || undefined,
+            },
+        });
     } catch (error) {
         console.error('Register error:', error);
-        
+
         if (error.name === 'ZodError') {
             return handleZodError(res, error);
         }
-        
-        if (error.message === MESSAGES.EMAIL_ALREADY_EXIST) {
-            return conflictResponse(res, error.message);
+
+        const msg = error.message || 'Registration failed';
+        const emailConflictMsgs = [
+            MESSAGES.EMAIL_ALREADY_EXIST,
+            'Email already exists',
+            'Email already exists. Please sign in instead.',
+        ].filter(Boolean);
+        if (emailConflictMsgs.includes(msg) || (msg && msg.toLowerCase().includes('email already exists'))) {
+            return conflictResponse(res, msg);
         }
-        if (error.message === MESSAGES.PHONE_ALREADY_EXIST) {
-            return conflictResponse(res, error.message);
+
+        const phoneConflictMsgs = [
+            MESSAGES.PHONE_ALREADY_EXIST,
+            'Phone number already exists',
+            'Phone number already exists. Please use a different phone number.',
+        ].filter(Boolean);
+        if (phoneConflictMsgs.includes(msg) || (msg && msg.toLowerCase().includes('phone number already exists'))) {
+            return conflictResponse(res, msg);
         }
-        
-        return errorResponse(res, error.message || 'Registration failed');
+
+        return errorResponse(res, msg);
     }
 };
 

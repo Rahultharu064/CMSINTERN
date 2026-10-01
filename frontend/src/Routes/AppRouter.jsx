@@ -193,7 +193,10 @@ const router = createBrowserRouter([
       { path: 'appointments', element: <StaffAppointments /> },
       { path: 'patients', element: <StaffPatients /> },
       { path: 'queue', element: <StaffQueue /> },
-      { path: 'billing', element: <StaffBilling /> },
+      { path: 'billing', element: <StaffBilling />, children: [
+        { index: true },
+        { path: ':id' },
+      ]},
       { path: 'settings', element: <StaffSettings /> },
     ],
   },

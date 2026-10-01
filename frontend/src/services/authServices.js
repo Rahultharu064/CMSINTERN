@@ -4,7 +4,26 @@ const API_URL = '/auth';
 
 export const register = async (userData) => {
   const response = await axios.post(`${API_URL}/register`, userData);
-  return response.data.data;
+  const body = response.data?.data || response.data || {};
+  const user = body.user || body;
+  const accessToken = body.accessToken || user.accessToken;
+  const refreshToken = body.refreshToken || user.refreshToken;
+  const needsEmailVerification =
+    body.needsEmailVerification !== undefined ? body.needsEmailVerification : !user.isEmailVerified;
+  const resendingVerification = body.resendingVerification || false;
+  const emailSendFailed = body.emailSendFailed || false;
+  const debugOtp = body.debugOtp || undefined;
+  const message = response.data?.message || response.data?.data?.message || null;
+  return {
+    user: user || null,
+    accessToken: accessToken || null,
+    refreshToken: refreshToken || null,
+    needsEmailVerification,
+    resendingVerification,
+    emailSendFailed,
+    debugOtp,
+    message,
+  };
 };
 
 export const login = async (credentials) => {

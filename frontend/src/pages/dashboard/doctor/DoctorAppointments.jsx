@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import {
   Search,
   Filter,
@@ -45,6 +45,45 @@ const DoctorAppointments = () => {
   const [search, setSearch] = useState('');
   const [rescheduleOpen, setRescheduleOpen] = useState(null);
   const [rescheduleTime, setRescheduleTime] = useState({ date: '', time: '' });
+  const [actionLoading, setActionLoading] = useState(null);
+  const openMenuRef = useRef(null);
+  const detailsRef = useRef(null);
+
+  const closeMenuOnDocClick = useRef(null);
+
+  useEffect(() => {
+    const handler = (e) => {
+      if (!openMenuRef.current) return;
+      const d = typeof openMenuRef.current === 'function' ? openMenuRef.current() : openMenuRef.current;
+      if (d && !d.contains(e.target)) {
+        const openDetails = document.querySelectorAll('details[open]');
+        openDetails.forEach((dt) => dt.removeAttribute('open'));
+      }
+    };
+    closeMenuOnDocClick.current = handler;
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, []);
+
+  const markComplete = async (aptId) => {
+    setActionLoading(aptId);
+    try {
+      const updated = await updateAppointment(aptId, { status: 'COMPLETED' });
+      const newStatus = updated?.status || 'COMPLETED';
+      setAppointmentsData((rows) =>
+        rows.map((r) =>
+          r.id === aptId
+            ? { ...r, status: (typeof newStatus === 'string' ? newStatus.replace('_', ' ') : 'Completed') || 'Completed' }
+            : r
+        )
+      );
+      toast.success('Appointment marked complete');
+    } catch (err) {
+      toast.error(err?.response?.data?.message || 'Could not update appointment');
+    } finally {
+      setActionLoading(null);
+    }
+  };
 
   useEffect(() => {
     const loadAppointments = async () => {

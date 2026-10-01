@@ -9,53 +9,132 @@ import { MESSAGES } from "../../constans/messages.js";
 // ==================== REGISTER USER ====================
 export const registerUser = async (userData) => {
     const { fullName, email, phone, password, role } = userData;
+    const normalizedEmail = email.toLowerCase().trim();
+    const normalizedPhone = phone ? phone.trim() : phone;
 
-    // Check if email already exists
-    const existingEmail = await prisma.user.findUnique({
-        where: { email }
+    const existingUser = await prisma.user.findUnique({
+        where: { email: normalizedEmail }
     });
 
-    if (existingEmail) {
-        throw new Error(MESSAGES.EMAIL_ALREADY_EXIST || 'Email already exists');
+    if (existingUser) {
+        if (!existingUser.isEmailVerified) {
+            try {
+                const sentOtp = await sendOtp(normalizedEmail, 'EMAIL_VERIFICATION', existingUser.id, existingUser.fullName || fullName);
+                const { password: _pw, ...safeUser } = existingUser;
+                return {
+                    needsEmailVerification: true,
+                    resendingVerification: true,
+                    user: {
+                        id: safeUser.id,
+                        fullName: safeUser.fullName,
+                        email: safeUser.email,
+                        phone: safeUser.phone,
+                        role: safeUser.role,
+                        isActive: safeUser.isActive,
+                        isEmailVerified: safeUser.isEmailVerified,
+                    },
+                    debugOtp: process.env.NODE_ENV !== 'production' ? sentOtp : undefined,
+                    message: 'Verification code resent. Please check your inbox.'
+                };
+            } catch (otpErr) {
+                const { password: _pw, ...safeUser } = existingUser;
+                const fallbackOtp = await prisma.oTP.create({
+                    data: {
+                        email: normalizedEmail,
+                        otp: Math.floor(100000 + Math.random() * 900000).toString(),
+                        expiresAt: new Date(Date.now() + (process.env.OTP_EXPIRY_MINUTES || 10) * 60 * 1000),
+                        type: 'EMAIL_VERIFICATION',
+                        userId: safeUser.id,
+                        isUsed: false,
+                        failedAttempts: 0,
+                    }
+                });
+                console.error(`⚠️ Register: Resend/email failed for ${normalizedEmail} (user already existed). Using fallback OTP:`, fallbackOtp.otp);
+                return {
+                    needsEmailVerification: true,
+                    resendingVerification: true,
+                    user: {
+                        id: safeUser.id,
+                        fullName: safeUser.fullName,
+                        email: safeUser.email,
+                        phone: safeUser.phone,
+                        role: safeUser.role,
+                        isActive: safeUser.isActive,
+                        isEmailVerified: safeUser.isEmailVerified,
+                    },
+                    debugOtp: fallbackOtp.otp,
+                    message: 'Email provider unavailable — please use the code shown to verify your account.'
+                };
+            }
+        }
+        throw new Error(MESSAGES.EMAIL_ALREADY_EXIST || 'Email already exists. Please sign in instead.');
     }
 
-    // Check if phone already exists
-    const existingPhone = await prisma.user.findFirst({
-        where: { phone }
-    });
-
-    if (existingPhone) {
-        throw new Error(MESSAGES.PHONE_ALREADY_EXIST || 'Phone number already exists');
+    if (normalizedPhone) {
+        const existingPhone = await prisma.user.findFirst({
+            where: { phone: normalizedPhone }
+        });
+        if (existingPhone) {
+            throw new Error(MESSAGES.PHONE_ALREADY_EXIST || 'Phone number already exists. Please use a different phone number.');
+        }
     }
 
-    // Hash password
     const hashedPassword = await hashPassword(password);
 
-    // Create user - REMOVED profile creation
-    const newUser = await prisma.user.create({
-        data: {
-            fullName,
-            email,
-            phone,
-            password: hashedPassword,
-            role: role ? role.toUpperCase() : "PATIENT",
-        }
-    });
-
+    let newUser;
     try {
-        await sendOtp(email, 'EMAIL_VERIFICATION', newUser.id, newUser.fullName);
-    } catch (otpError) {
-        console.error(`⚠️ Register: Failed to generate/send verification OTP for ${email}.`, otpError.message);
-        throw new Error('Could not send verification code. Please try again or contact support.');
+        newUser = await prisma.user.create({
+            data: {
+                fullName,
+                email: normalizedEmail,
+                phone: normalizedPhone,
+                password: hashedPassword,
+                role: role ? role.toUpperCase() : "PATIENT",
+            }
+        });
+    } catch (createErr) {
+        if (createErr?.code === 'P2002') {
+            const target = (createErr.meta?.target || []).join(',');
+            if (target.includes('email')) throw new Error(MESSAGES.EMAIL_ALREADY_EXIST || 'Email already exists. Please sign in instead.');
+            if (target.includes('phone')) throw new Error(MESSAGES.PHONE_ALREADY_EXIST || 'Phone number already exists. Please use a different phone number.');
+        }
+        throw createErr;
     }
 
-    // Generate tokens
+    let sentOtp = null;
+    let emailSendFailed = false;
+    let fallbackOtpRecord = null;
+
+    try {
+        sentOtp = await sendOtp(normalizedEmail, 'EMAIL_VERIFICATION', newUser.id, newUser.fullName);
+    } catch (otpError) {
+        emailSendFailed = true;
+        console.error(`⚠️ Register: Failed to send verification OTP email to ${normalizedEmail}.`, otpError.message);
+        try {
+            fallbackOtpRecord = await prisma.oTP.create({
+                data: {
+                    email: normalizedEmail,
+                    otp: Math.floor(100000 + Math.random() * 900000).toString(),
+                    expiresAt: new Date(Date.now() + (process.env.OTP_EXPIRY_MINUTES || 10) * 60 * 1000),
+                    type: 'EMAIL_VERIFICATION',
+                    userId: newUser.id,
+                    isUsed: false,
+                    failedAttempts: 0,
+                }
+            });
+            sentOtp = fallbackOtpRecord.otp;
+            console.error(`⚠️ Register: Email provider unavailable. Created fallback DB OTP for ${normalizedEmail}:`, sentOtp);
+        } catch (dbErr) {
+            console.error('⚠️ Register: Could not create fallback OTP either:', dbErr.message);
+        }
+    }
+
     const payload = {
         id: newUser.id,
         email: newUser.email,
         role: newUser.role
     };
-    
+
     const accessToken = generateAccessToken(payload);
     const refreshToken = generateRefreshToken(payload);
 
@@ -64,7 +143,7 @@ export const registerUser = async (userData) => {
             data: {
                 token: refreshToken,
                 userId: newUser.id,
-                expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days
+                expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
             },
         });
     } catch (error) {
@@ -74,10 +153,9 @@ export const registerUser = async (userData) => {
         throw error;
     }
 
-    // Return user without password
     const { password: _, ...userWithoutPassword } = newUser;
-    
-    return {
+
+    const response = {
         user: {
             id: userWithoutPassword.id,
             fullName: userWithoutPassword.fullName,
@@ -88,8 +166,21 @@ export const registerUser = async (userData) => {
             isEmailVerified: userWithoutPassword.isEmailVerified,
         },
         accessToken,
-        refreshToken
+        refreshToken,
+        needsEmailVerification: true,
     };
+
+    if (emailSendFailed) {
+        response.emailSendFailed = true;
+        response.message = 'Account created, but the verification email could not be delivered. Please use the code shown.';
+        response.debugOtp = sentOtp;
+    }
+
+    if (process.env.NODE_ENV !== 'production' && sentOtp) {
+        response.debugOtp = sentOtp;
+    }
+
+    return response;
 };
 
 const createAuthSession = async (user, userAgent, ipAddress, action = 'LOGIN') => {
