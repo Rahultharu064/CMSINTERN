@@ -5,54 +5,69 @@ dotenv.config();
 export const resendApiKey = process.env.RESEND_API_KEY || '';
 
 const resendKeyFromEnv = process.env.RESEND_API_KEY;
-const emailFromEnv = process.env.EMAIL_FROM || process.env.EMAIL_FROM_ADDR;
-if (resendKeyFromEnv && !emailFromEnv && process.env.NODE_ENV !== 'development') {
+const emailFromEnvRaw = process.env.EMAIL_FROM || process.env.EMAIL_FROM_ADDR;
+if (resendKeyFromEnv && !emailFromEnvRaw && process.env.NODE_ENV !== 'development') {
   console.warn('='.repeat(72));
   console.warn('🚨 EMAIL CONFIG WARNING: RESEND_API_KEY is set but EMAIL_FROM is not!');
   console.warn('   Emails will 400 in production until you set EMAIL_FROM to a');
   console.warn('   Resend-verified sender (e.g. EMAIL_FROM="Clinic <noreply@yourdomain>").');
-  console.warn('   Falling back to Resend test sender "onboarding@resend.dev" which');
-  console.warn('   only delivers to your own Resend account email.');
+  console.warn('   Falling back to hardcoded default sender.');
   console.warn('='.repeat(72));
 }
 
+const resolveEmailFrom = () => {
+  const envVal = process.env.EMAIL_FROM;
+  if (envVal && envVal.trim()) return envVal;
+  const addrVal = process.env.EMAIL_FROM_ADDR;
+  if (addrVal && addrVal.trim()) {
+    return `BishwasSetu <${addrVal.trim()}>`;
+  }
+  return 'BishwasSetu <noreply@bishwassetu.health>';
+};
+
+const resolveSmtpPort = () => {
+  const v = process.env.SMTP_PORT;
+  if (v === undefined || v === null || v === '') return 587;
+  const n = Number(v);
+  return isNaN(n) ? 587 : n;
+};
+
 export const ENV = {
-  // Server
   PORT: process.env.PORT || 5000,
   NODE_ENV: process.env.NODE_ENV || "development",
 
-  // Database
   DATABASE_URL: process.env.DATABASE_URL,
 
-  // JWT
   JWT_ACCESS_SECRET: process.env.JWT_ACCESS_SECRET,
   JWT_REFRESH_SECRET: process.env.JWT_REFRESH_SECRET,
   JWT_ACCESS_EXPIRES_IN: process.env.JWT_ACCESS_EXPIRES_IN || "15m",
   JWT_REFRESH_EXPIRES_IN: process.env.JWT_REFRESH_EXPIRES_IN || "7d",
 
-  // Cookie
   COOKIE_SECURE: process.env.COOKIE_SECURE === "true",
   COOKIE_SAME_SITE: process.env.COOKIE_SAME_SITE || "lax",
   COOKIE_DOMAIN: process.env.COOKIE_DOMAIN || undefined,
 
-  // // Client
-  // CLIENT_URL: process.env.CLIENT_URL || "http://localhost:3000",
   FRONTEND_URL: process.env.FRONTEND_URL || "http://localhost:3000",
+  FRONTEND_DIST: process.env.FRONTEND_DIST || undefined,
   RESET_PASSWORD_URL:
     process.env.RESET_PASSWORD_URL ||
     "http://localhost:3000/reset-password",
 
-  // Email (Resend-only — use EMAIL_FROM in RFC-5322 format: "Sender Name <addr@domain>")
-  EMAIL_FROM:
-    process.env.EMAIL_FROM ||
-    `BishwasSetu <${process.env.EMAIL_FROM_ADDR || "onboarding@resend.dev"}>`,
+  EMAIL_FROM: resolveEmailFrom(),
 
-  // Resend (https://resend.com/docs/api-reference/introduction)
-  EMAIL_PROVIDER: "resend",
+  EMAIL_PROVIDER: process.env.EMAIL_PROVIDER || "resend",
   RESEND_API_KEY: process.env.RESEND_API_KEY || '',
   RESEND_AUDIENCE_ID: process.env.RESEND_AUDIENCE_ID || undefined,
 
-  // OTP
+  EMAIL_SOFT_FAIL: process.env.EMAIL_SOFT_FAIL !== 'false',
+
+  SMTP_HOST: process.env.SMTP_HOST || undefined,
+  SMTP_PORT: resolveSmtpPort(),
+  SMTP_USER: process.env.SMTP_USER || undefined,
+  SMTP_PASS: process.env.SMTP_PASS || undefined,
+  SMTP_SECURE: process.env.SMTP_SECURE || undefined,
+  SMTP_FROM: process.env.SMTP_FROM || process.env.EMAIL_FROM || resolveEmailFrom(),
+
   OTP_EXPIRY_MINUTES:
     parseInt(process.env.OTP_EXPIRY_MINUTES) || 10,
 
@@ -62,7 +77,6 @@ export const ENV = {
   OTP_MAX_ATTEMPTS: parseInt(process.env.OTP_MAX_ATTEMPTS) || 5,
   OTP_LOCKOUT_MINUTES: parseInt(process.env.OTP_LOCKOUT_MINUTES) || 15,
 
-  // OTP Rate Limit
   OTP_RATE_LIMIT_WINDOW:
     parseInt(process.env.OTP_RATE_LIMIT_WINDOW) || 900000,
 
@@ -78,7 +92,6 @@ export const ENV = {
   Cloud_API_SECRET: process.env.CLOUDINARY_API_SECRET || process.env.Cloud_API_SECRET,
   Cloud_API_KEY: process.env.CLOUDINARY_API_KEY || process.env.Cloud_API_KEY,
 
-  // Khalti Payment
   KHALTI_SECRET_KEY: process.env.KHALTI_SECRET_KEY,
   KHALTI_RETURN_URL: process.env.KHALTI_RETURN_URL,
   KHALTI_WEBSITE_URL: process.env.KHALTI_WEBSITE_URL,
@@ -88,13 +101,11 @@ export const ENV = {
   KHALTI_MAX_RETRIES: parseInt(process.env.KHALTI_MAX_RETRIES) || 3,
   KHALTI_RETRY_DELAY_MS: parseInt(process.env.KHALTI_RETRY_DELAY_MS) || 1000,
 
-  // Socket.IO
   SOCKET_CORS_ORIGIN: process.env.SOCKET_CORS_ORIGIN,
   SOCKET_HEARTBEAT_INTERVAL: parseInt(process.env.SOCKET_HEARTBEAT_INTERVAL) || 25000,
   SOCKET_HEARTBEAT_TIMEOUT: parseInt(process.env.SOCKET_HEARTBEAT_TIMEOUT) || 20000,
   SOCKET_MAX_CONNECTIONS_PER_USER: parseInt(process.env.SOCKET_MAX_CONNECTIONS_PER_USER) || 5,
 
-  // eSewa payment
   ESEWA_SECRET_KEY: process.env.ESEWA_SECRET_KEY,
   ESEWA_PRODUCT_CODE: process.env.ESEWA_PRODUCT_CODE,
   ESEWA_SUCCESS_URL: process.env.ESEWA_SUCCESS_URL,

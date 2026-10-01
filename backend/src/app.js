@@ -28,17 +28,33 @@ app.use(extraSecurityHeaders);
 // 2. CORS — strict origin list + credentials
 const allowedOrigins = [
   ENV.FRONTEND_URL,
-  'http://localhost:5173',    // localhost:5155
+  'http://localhost:5173',
   'http://localhost:3000',
   'http://127.0.0.1:5173',
   'http://127.0.0.1:3000',
 ].filter(Boolean);
+
+let frontendHostname = null;
+try {
+  if (ENV.FRONTEND_URL) {
+    frontendHostname = new URL(ENV.FRONTEND_URL).hostname;
+  }
+} catch {}
 
 app.use(
   cors({
     origin: (origin, callback) => {
       if (!origin) return callback(null, true);
       if (allowedOrigins.includes(origin)) return callback(null, true);
+      try {
+        const originUrl = new URL(origin);
+        if (frontendHostname && originUrl.hostname === frontendHostname) {
+          return callback(null, true);
+        }
+        if (originUrl.hostname === 'onrender.com' || originUrl.hostname.endsWith('.onrender.com')) {
+          return callback(null, true);
+        }
+      } catch {}
       if (ENV.NODE_ENV === 'development') return callback(null, true);
       callback(new Error(`CORS blocked origin: ${origin}`));
     },

@@ -5,8 +5,12 @@ import { generateAccessToken, generateRefreshToken, verifyRefreshToken } from ".
 import { resendOtp, sendOtp, verifyOtp } from "../../utils/otp.js";
 import { sendWelcomeEmail } from "../../utils/email.js";
 import { MESSAGES } from "../../constans/messages.js";
+import { ENV } from "../../config/env.js";
 
-// ==================== REGISTER USER ====================
+const includeDebugOtp = (otpSendFailed) => {
+    return ENV.NODE_ENV !== 'production' || otpSendFailed;
+};
+
 export const registerUser = async (userData) => {
     const { fullName, email, phone, password, role } = userData;
     const normalizedEmail = email.toLowerCase().trim();
@@ -19,9 +23,11 @@ export const registerUser = async (userData) => {
     if (existingUser) {
         if (!existingUser.isEmailVerified) {
             try {
-                const sentOtp = await sendOtp(normalizedEmail, 'EMAIL_VERIFICATION', existingUser.id, existingUser.fullName || fullName);
+                const otpResult = await sendOtp(normalizedEmail, 'EMAIL_VERIFICATION', existingUser.id, existingUser.fullName || fullName);
+                const actualOtp = otpResult.otp;
+                const emailSendFailed = !!otpResult.otpSendFailed;
                 const { password: _pw, ...safeUser } = existingUser;
-                return {
+                const resp = {
                     needsEmailVerification: true,
                     resendingVerification: true,
                     user: {
@@ -33,16 +39,28 @@ export const registerUser = async (userData) => {
                         isActive: safeUser.isActive,
                         isEmailVerified: safeUser.isEmailVerified,
                     },
-                    debugOtp: process.env.NODE_ENV !== 'production' ? sentOtp : undefined,
-                    message: 'Verification code resent. Please check your inbox.'
+                    message: emailSendFailed
+                        ? 'Account created, but the verification email could not be delivered. Please use the code shown.'
+                        : 'Verification code resent. Please check your inbox.',
                 };
+                if (emailSendFailed) {
+                    resp.emailSendFailed = true;
+                    resp.otpSendReason = otpResult.otpSendReason;
+                } else {
+                    resp.otpSent = true;
+                    resp.otpSendProvider = otpResult.otpSendProvider;
+                }
+                if (includeDebugOtp(emailSendFailed)) {
+                    resp.debugOtp = actualOtp;
+                }
+                return resp;
             } catch (otpErr) {
                 const { password: _pw, ...safeUser } = existingUser;
                 const fallbackOtp = await prisma.oTP.create({
                     data: {
                         email: normalizedEmail,
                         otp: Math.floor(100000 + Math.random() * 900000).toString(),
-                        expiresAt: new Date(Date.now() + (process.env.OTP_EXPIRY_MINUTES || 10) * 60 * 1000),
+                        expiresAt: new Date(Date.now() + (ENV.OTP_EXPIRY_MINUTES || 10) * 60 * 1000),
                         type: 'EMAIL_VERIFICATION',
                         userId: safeUser.id,
                         isUsed: false,
@@ -62,6 +80,7 @@ export const registerUser = async (userData) => {
                         isActive: safeUser.isActive,
                         isEmailVerified: safeUser.isEmailVerified,
                     },
+                    emailSendFailed: true,
                     debugOtp: fallbackOtp.otp,
                     message: 'Email provider unavailable — please use the code shown to verify your account.'
                 };
@@ -103,10 +122,18 @@ export const registerUser = async (userData) => {
 
     let sentOtp = null;
     let emailSendFailed = false;
+    let otpSendReason = null;
+    let otpSendProvider = null;
     let fallbackOtpRecord = null;
 
     try {
-        sentOtp = await sendOtp(normalizedEmail, 'EMAIL_VERIFICATION', newUser.id, newUser.fullName);
+        const otpResult = await sendOtp(normalizedEmail, 'EMAIL_VERIFICATION', newUser.id, newUser.fullName);
+        sentOtp = otpResult.otp;
+        otpSendProvider = otpResult.otpSendProvider || null;
+        if (otpResult.otpSendFailed) {
+            emailSendFailed = true;
+            otpSendReason = otpResult.otpSendReason || null;
+        }
     } catch (otpError) {
         emailSendFailed = true;
         console.error(`⚠️ Register: Failed to send verification OTP email to ${normalizedEmail}.`, otpError.message);
@@ -115,7 +142,7 @@ export const registerUser = async (userData) => {
                 data: {
                     email: normalizedEmail,
                     otp: Math.floor(100000 + Math.random() * 900000).toString(),
-                    expiresAt: new Date(Date.now() + (process.env.OTP_EXPIRY_MINUTES || 10) * 60 * 1000),
+                    expiresAt: new Date(Date.now() + (ENV.OTP_EXPIRY_MINUTES || 10) * 60 * 1000),
                     type: 'EMAIL_VERIFICATION',
                     userId: newUser.id,
                     isUsed: false,
@@ -123,6 +150,7 @@ export const registerUser = async (userData) => {
                 }
             });
             sentOtp = fallbackOtpRecord.otp;
+            otpSendReason = otpError.message || 'Fallback DB OTP created after sendOtp threw';
             console.error(`⚠️ Register: Email provider unavailable. Created fallback DB OTP for ${normalizedEmail}:`, sentOtp);
         } catch (dbErr) {
             console.error('⚠️ Register: Could not create fallback OTP either:', dbErr.message);
@@ -173,10 +201,14 @@ export const registerUser = async (userData) => {
     if (emailSendFailed) {
         response.emailSendFailed = true;
         response.message = 'Account created, but the verification email could not be delivered. Please use the code shown.';
-        response.debugOtp = sentOtp;
+        if (otpSendReason) response.otpSendReason = otpSendReason;
+    } else {
+        response.message = 'Account created successfully. Please check your email for the verification code.';
+        response.otpSent = true;
+        if (otpSendProvider) response.otpSendProvider = otpSendProvider;
     }
 
-    if (process.env.NODE_ENV !== 'production' && sentOtp) {
+    if (includeDebugOtp(emailSendFailed) && sentOtp) {
         response.debugOtp = sentOtp;
     }
 
@@ -254,7 +286,6 @@ const createAuthSession = async (user, userAgent, ipAddress, action = 'LOGIN') =
     };
 };
 
-// ==================== LOGIN USER ====================
 export const loginUser = async (email, password, userAgent, ipAddress) => {
     const user = await prisma.user.findUnique({
         where: { email },
@@ -280,7 +311,6 @@ export const loginUser = async (email, password, userAgent, ipAddress) => {
     return createAuthSession(user, userAgent, ipAddress, 'LOGIN');
 };
 
-// ==================== ADMIN LOGIN ====================
 export const adminLogin = async (email, password, userAgent, ipAddress) => {
     const user = await prisma.user.findUnique({ where: { email } });
 
@@ -302,7 +332,6 @@ export const adminLogin = async (email, password, userAgent, ipAddress) => {
     return createAuthSession(user, userAgent, ipAddress, 'ADMIN_LOGIN');
 };
 
-// ==================== VERIFY EMAIL ====================
 export const verifyEmail = async (email, otp) => {
     const verificationResult = await verifyOtp(email, otp, "EMAIL_VERIFICATION");
     if (!verificationResult.success) {
@@ -323,7 +352,6 @@ export const verifyEmail = async (email, otp) => {
         }
     });
 
-    // Welcome email — non-blocking
     sendWelcomeEmail(user.email, user.fullName, user.role).catch((err) =>
         console.warn('verifyEmail: welcome email send failed (non-blocking):', err.message)
     );
@@ -344,9 +372,22 @@ export const resendVerificationOTP = async (email) => {
         throw new Error(MESSAGES.EMAIL_ALREADY_VERIFIED);
     }
 
-    await resendOtp(email, 'EMAIL_VERIFICATION', user.id, user.fullName);
+    const otpResult = await resendOtp(email, 'EMAIL_VERIFICATION', user.id, user.fullName);
 
-    return { message: "Verification code resent successfully" };
+    const resp = { message: "Verification code resent successfully" };
+    if (otpResult.otpSendFailed) {
+        resp.emailSendFailed = true;
+        resp.otpSendFailed = true;
+        resp.otpSendReason = otpResult.otpSendReason;
+        resp.message = 'Verification email could not be delivered. Please use the code shown.';
+    } else {
+        resp.otpSent = true;
+        if (otpResult.otpSendProvider) resp.otpSendProvider = otpResult.otpSendProvider;
+    }
+    if (includeDebugOtp(!!otpResult.otpSendFailed)) {
+        resp.debugOtp = otpResult.otp;
+    }
+    return resp;
 };
 
 export const forgotPassword = async (email) => {
@@ -358,29 +399,37 @@ export const forgotPassword = async (email) => {
         throw new Error(MESSAGES.USER_NOT_FOUND);
     }
 
-    await sendOtp(email, 'PASSWORD_RESET', user.id, user.fullName);
+    const otpResult = await sendOtp(email, 'PASSWORD_RESET', user.id, user.fullName);
 
-    return { message: 'Password reset code sent successfully' };
+    const resp = { message: 'Password reset code sent successfully' };
+    if (otpResult.otpSendFailed) {
+        resp.emailSendFailed = true;
+        resp.otpSendFailed = true;
+        resp.otpSendReason = otpResult.otpSendReason;
+        resp.message = 'Password reset email could not be delivered. Please contact support or use the debug code if shown.';
+    } else {
+        resp.otpSent = true;
+        if (otpResult.otpSendProvider) resp.otpSendProvider = otpResult.otpSendProvider;
+    }
+    if (includeDebugOtp(!!otpResult.otpSendFailed)) {
+        resp.debugOtp = otpResult.otp;
+    }
+    return resp;
 };
 
-// ==================== RESET PASSWORD ====================
 export const resetPassword = async (email, otp, newPassword) => {
-    // Verify OTP
     const verificationResult = await verifyOtp(email, otp, "PASSWORD_RESET");
     if (!verificationResult.success) {
         throw new Error(MESSAGES.INVALID_OTP || "Invalid OTP");
     }
 
-    // Hash new password
     const hashedPassword = await hashPassword(newPassword);
 
-    // Update user password
     const user = await prisma.user.update({
         where: { email },
         data: { password: hashedPassword }
     });
 
-    // Delete all refresh tokens and sessions for this user
     await prisma.refreshToken.updateMany({
         where: { userId: user.id },
         data: { revoked: true, revokedAt: new Date() }
@@ -391,7 +440,6 @@ export const resetPassword = async (email, otp, newPassword) => {
         data: { isActive: false }
     });
 
-    // Create audit log
     await prisma.auditLog.create({
         data: {
             userId: user.id,
@@ -404,13 +452,11 @@ export const resetPassword = async (email, otp, newPassword) => {
     return user;
 };
 
-// ==================== REFRESH ACCESS TOKEN ====================
 export const refreshAccessToken = async (refreshToken, userAgent, ipAddress) => {
     if (!refreshToken) {
         throw new Error(MESSAGES.INVALID_REFRESH_TOKEN || 'Invalid refresh token');
     }
 
-    // Verify refresh token
     let decoded;
     try {
         decoded = verifyRefreshToken(refreshToken);
@@ -421,7 +467,6 @@ export const refreshAccessToken = async (refreshToken, userAgent, ipAddress) => 
         throw new Error(MESSAGES.INVALID_REFRESH_TOKEN || 'Invalid refresh token');
     }
 
-    // Check if refresh token exists in database
     const tokenRecord = await prisma.refreshToken.findFirst({
         where: {
             token: refreshToken,
@@ -434,7 +479,6 @@ export const refreshAccessToken = async (refreshToken, userAgent, ipAddress) => 
         throw new Error(MESSAGES.INVALID_REFRESH_TOKEN || 'Invalid refresh token');
     }
 
-    // Check if token is expired
     if (new Date() > tokenRecord.expiresAt) {
         await prisma.refreshToken.update({
             where: { id: tokenRecord.id },
@@ -443,7 +487,6 @@ export const refreshAccessToken = async (refreshToken, userAgent, ipAddress) => 
         throw new Error('Refresh token expired');
     }
 
-    // Get user - REMOVED profile include
     const user = await prisma.user.findUnique({
         where: { id: decoded.id },
     });
@@ -452,7 +495,6 @@ export const refreshAccessToken = async (refreshToken, userAgent, ipAddress) => 
         throw new Error('User not found or inactive');
     }
 
-    // Generate new tokens
     const payload = {
         id: user.id,
         email: user.email,
@@ -462,7 +504,6 @@ export const refreshAccessToken = async (refreshToken, userAgent, ipAddress) => 
     const newAccessToken = generateAccessToken(payload);
     const newRefreshToken = generateRefreshToken(payload);
 
-    // Save new refresh token
     try {
         await prisma.refreshToken.create({
             data: {
@@ -480,16 +521,14 @@ export const refreshAccessToken = async (refreshToken, userAgent, ipAddress) => 
         throw error;
     }
 
-    // Revoke old refresh token
     await prisma.refreshToken.update({
         where: { id: tokenRecord.id },
         data: { revoked: true, revokedAt: new Date() },
     });
 
-    // Invalidate old sessions and create new one
     await prisma.session.updateMany({
         where: { userId: user.id, isActive: true },
-        data: { isActive: false },
+        data: { isActive: false }
     });
 
     try {
@@ -509,7 +548,6 @@ export const refreshAccessToken = async (refreshToken, userAgent, ipAddress) => 
         throw error;
     }
 
-    // Return user without password
     const { password: _, ...userWithoutPassword } = user;
     
     return {
@@ -519,15 +557,12 @@ export const refreshAccessToken = async (refreshToken, userAgent, ipAddress) => 
     };
 };
 
-// ==================== LOGOUT USER ====================
 export const logoutUser = async (userId, accessToken) => {
-    // Revoke all refresh tokens
     await prisma.refreshToken.updateMany({
         where: { userId },
         data: { revoked: true, revokedAt: new Date() },
     });
 
-    // Invalidate sessions
     if (accessToken) {
         await prisma.session.updateMany({
             where: { userId, token: accessToken, isActive: true },
@@ -540,7 +575,6 @@ export const logoutUser = async (userId, accessToken) => {
         });
     }
 
-    // Create audit log
     await prisma.auditLog.create({
         data: {
             userId,
@@ -552,7 +586,6 @@ export const logoutUser = async (userId, accessToken) => {
     return { message: MESSAGES.USER_LOGGED_OUT || 'User logged out successfully' };
 };
 
-// ==================== GET USER PROFILE ====================
 export const getUserProfile = async (userId) => {
     const user = await prisma.user.findUnique({
         where: { id: userId },
@@ -578,11 +611,9 @@ export const getUserProfile = async (userId) => {
     return userWithoutPassword;
 };
 
-// ==================== UPDATE USER PROFILE ====================
 export const updateUserProfile = async (userId, updateData) => {
     const { fullName, phone, ...otherData } = updateData;
 
-    // Check if phone already exists for other user
     if (phone) {
         const existingPhone = await prisma.user.findFirst({
             where: {
@@ -605,7 +636,6 @@ export const updateUserProfile = async (userId, updateData) => {
         }
     });
 
-    // Create audit log
     await prisma.auditLog.create({
         data: {
             userId: user.id,
@@ -619,7 +649,6 @@ export const updateUserProfile = async (userId, updateData) => {
     return userWithoutPassword;
 };
 
-// ==================== CHANGE PASSWORD ====================
 export const changePassword = async (userId, currentPassword, newPassword) => {
     const user = await prisma.user.findUnique({
         where: { id: userId },
@@ -630,22 +659,18 @@ export const changePassword = async (userId, currentPassword, newPassword) => {
         throw new Error(MESSAGES.USER_NOT_FOUND || 'User not found');
     }
 
-    // Verify current password
     const isPasswordValid = await comparePassword(currentPassword, user.password);
     if (!isPasswordValid) {
         throw new Error('Current password is incorrect');
     }
 
-    // Hash new password
     const hashedPassword = await hashPassword(newPassword);
 
-    // Update password
     await prisma.user.update({
         where: { id: userId },
         data: { password: hashedPassword }
     });
 
-    // Revoke all refresh tokens and sessions
     await prisma.refreshToken.updateMany({
         where: { userId },
         data: { revoked: true, revokedAt: new Date() }
@@ -656,7 +681,6 @@ export const changePassword = async (userId, currentPassword, newPassword) => {
         data: { isActive: false }
     });
 
-    // Create audit log
     await prisma.auditLog.create({
         data: {
             userId,
@@ -669,7 +693,6 @@ export const changePassword = async (userId, currentPassword, newPassword) => {
     return { message: 'Password changed successfully' };
 };
 
-// ==================== ADMIN: GET ALL USERS ====================
 export const getAllUsers = async (page = 1, limit = 10, role = null, search = null) => {
     const skip = (page - 1) * limit;
     
@@ -716,7 +739,6 @@ export const getAllUsers = async (page = 1, limit = 10, role = null, search = nu
     };
 };
 
-// ==================== ADMIN: GET USER BY ID ====================
 export const getUserById = async (userId) => {
     const user = await prisma.user.findUnique({
         where: { id: userId },
@@ -742,7 +764,6 @@ export const getUserById = async (userId) => {
     return userWithoutPassword;
 };
 
-// ==================== ADMIN: UPDATE USER ROLE ====================
 export const updateUserRole = async (userId, newRole) => {
     const user = await prisma.user.findUnique({
         where: { id: userId },
@@ -757,7 +778,6 @@ export const updateUserRole = async (userId, newRole) => {
         data: { role: newRole.toUpperCase() },
     });
 
-    // Create audit log
     await prisma.auditLog.create({
         data: {
             userId: userId,
@@ -775,7 +795,6 @@ export const updateUserRole = async (userId, newRole) => {
     return userWithoutPassword;
 };
 
-// ==================== ADMIN: DELETE USER ====================
 export const deleteUser = async (userId) => {
     const user = await prisma.user.findUnique({
         where: { id: userId },
@@ -785,7 +804,6 @@ export const deleteUser = async (userId) => {
         throw new Error(MESSAGES.USER_NOT_FOUND || 'User not found');
     }
 
-    // Delete all related records
     await prisma.$transaction([
         prisma.auditLog.deleteMany({ where: { userId } }),
         prisma.session.deleteMany({ where: { userId } }),
@@ -797,7 +815,6 @@ export const deleteUser = async (userId) => {
     return { message: 'User deleted successfully' };
 };
 
-// ==================== ADMIN: TOGGLE USER STATUS ====================
 export const toggleUserStatus = async (userId) => {
     const user = await prisma.user.findUnique({
         where: { id: userId },
@@ -812,7 +829,6 @@ export const toggleUserStatus = async (userId) => {
         data: { isActive: !user.isActive },
     });
 
-    // Create audit log
     await prisma.auditLog.create({
         data: {
             userId: userId,
@@ -828,37 +844,3 @@ export const toggleUserStatus = async (userId) => {
     const { password: _, ...userWithoutPassword } = updatedUser;
     return userWithoutPassword;
 };
-
-// // ==================== ADMIN: GET AUDIT LOGS ====================
-// export const getAuditLogs = async (userId = null, page = 1, limit = 20) => {
-//     const skip = (page - 1) * limit;
-//     const where = userId ? { userId } : {};
-
-//     const [logs, total] = await Promise.all([
-//         prisma.auditLog.findMany({
-//             where,
-//             include: {
-//                 user: {
-//                     select: {
-//                         email: true,
-//                         fullName: true,
-//                     },
-//                 },
-//             },
-//             skip,
-//             take: limit,
-//             orderBy: { createdAt: 'desc' },
-//         }),
-//         prisma.auditLog.count({ where }),
-//     ]);
-
-//     return {
-//         logs,
-//         pagination: {
-//             page,
-//             limit,
-//             total,
-//             totalPages: Math.ceil(total / limit),
-//         },
-//     };
-// };

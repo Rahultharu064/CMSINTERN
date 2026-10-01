@@ -54,6 +54,16 @@ const generateOtpExpiry = (minutes = OTP_EXPIRY_MINUTES) => {
 
 const isOtpExpired = (expiryDate) => new Date() > new Date(expiryDate);
 
+const logOtpBanner = (email, type, otp, expiresAt, userId) => {
+  const expiryIso = new Date(expiresAt).toISOString();
+  const uid = userId || 'n/a';
+  console.warn(
+    '\n=================================== OTP ===================================\n' +
+    `Email: ${email} | Type: ${formatOtpType(type)} | OTP: ${otp} | Expires: ${expiryIso} | userId: ${uid}\n` +
+    '==========================================================================\n'
+  );
+};
+
 const prepareNewOtp = async (email, type = "EMAIL_VERIFICATION", userId = null) => {
   const normalizedType = formatOtpType(type);
 
@@ -106,21 +116,50 @@ const prepareNewOtp = async (email, type = "EMAIL_VERIFICATION", userId = null) 
 const dispatchOtpEmail = async (email, otp, type, name) => {
   const normalizedType = formatOtpType(type);
   try {
+    let result;
     if (normalizedType === 'EMAIL_VERIFICATION') {
-      await sendVerificationEmail(email, otp, name);
+      result = await sendVerificationEmail(email, otp, name);
     } else if (normalizedType === 'PASSWORD_RESET') {
-      await sendPasswordResetEmail(email, otp, name);
+      result = await sendPasswordResetEmail(email, otp, name);
     }
+    if (result && result.success === false) {
+      return {
+        success: false,
+        reason: result.reason || 'Email send returned soft failure',
+        provider: result.provider || null,
+      };
+    }
+    return { success: true, provider: result?.provider || null };
   } catch (error) {
     console.error(`⚠️ otp: failed to dispatch ${normalizedType} email to ${email}:`, error.message);
+    return {
+      success: false,
+      reason: error.message || 'Unknown email dispatch error',
+      provider: null,
+    };
   }
 };
 
 export const sendOtp = async (email, type = "EMAIL_VERIFICATION", userId = null, name) => {
   try {
-    const { otp } = await prepareNewOtp(email, type, userId);
-    await dispatchOtpEmail(email, otp, type, name);
-    return otp;
+    const { otp, record } = await prepareNewOtp(email, type, userId);
+    logOtpBanner(email, type, otp, record.expiresAt, userId);
+    const dispatchResult = await dispatchOtpEmail(email, otp, type, name);
+    if (!dispatchResult.success) {
+      return {
+        otp,
+        otpSent: false,
+        otpSendFailed: true,
+        otpSendReason: dispatchResult.reason,
+        otpSendProvider: dispatchResult.provider,
+      };
+    }
+    return {
+      otp,
+      otpSent: true,
+      otpSendFailed: false,
+      otpSendProvider: dispatchResult.provider,
+    };
   } catch (error) {
     console.error('Send OTP Error:', error.message);
     throw error;
@@ -178,9 +217,24 @@ export const verifyOtp = async (email, otp, type = "EMAIL_VERIFICATION") => {
 
 export const resendOtp = async (email, type = "EMAIL_VERIFICATION", userId = null, name) => {
   try {
-    const { otp } = await prepareNewOtp(email, type, userId);
-    await dispatchOtpEmail(email, otp, type, name);
-    return otp;
+    const { otp, record } = await prepareNewOtp(email, type, userId);
+    logOtpBanner(email, type, otp, record.expiresAt, userId);
+    const dispatchResult = await dispatchOtpEmail(email, otp, type, name);
+    if (!dispatchResult.success) {
+      return {
+        otp,
+        otpSent: false,
+        otpSendFailed: true,
+        otpSendReason: dispatchResult.reason,
+        otpSendProvider: dispatchResult.provider,
+      };
+    }
+    return {
+      otp,
+      otpSent: true,
+      otpSendFailed: false,
+      otpSendProvider: dispatchResult.provider,
+    };
   } catch (error) {
     console.error('Resend OTP Error:', error.message);
     throw error;

@@ -12,6 +12,13 @@ try {
   ResendSDK = null;
 }
 
+let NodemailerSDK = null;
+try {
+  NodemailerSDK = require('nodemailer');
+} catch {
+  NodemailerSDK = null;
+}
+
 const apiKeyMissing = !ENV.RESEND_API_KEY;
 
 let resendClient = null;
@@ -24,13 +31,34 @@ if (ResendSDK && !apiKeyMissing) {
   }
 }
 
+let smtpTransport = null;
+const getSmtpTransport = () => {
+  if (smtpTransport) return smtpTransport;
+  if (!NodemailerSDK || !ENV.SMTP_HOST) return null;
+  try {
+    smtpTransport = NodemailerSDK.createTransport({
+      host: ENV.SMTP_HOST,
+      port: ENV.SMTP_PORT,
+      secure: ENV.SMTP_SECURE === 'true' || Number(ENV.SMTP_PORT) === 465,
+      auth: ENV.SMTP_USER ? { user: ENV.SMTP_USER, pass: ENV.SMTP_PASS } : undefined,
+    });
+  } catch (err) {
+    console.warn('[email] SMTP transport init failed:', err.message);
+    smtpTransport = null;
+  }
+  return smtpTransport;
+};
+
 const sanitizeTo = (to) => {
   if (Array.isArray(to)) return to;
   if (typeof to === 'string') return to.split(',').map((e) => e.trim()).filter(Boolean);
   return [];
 };
 
-const buildFrom = () => ENV.EMAIL_FROM;
+const buildFrom = () => {
+  const from = ENV.EMAIL_FROM || ENV.SMTP_FROM;
+  return from || 'BishwasSetu <noreply@bishwassetu.health>';
+};
 
 const sendViaResendHttp = async (payload) => {
   const res = await fetch(RESEND_API, {
@@ -50,10 +78,25 @@ const sendViaResendHttp = async (payload) => {
 };
 
 const sendViaResendSdk = async (payload) => {
-  if (!resendClient) return sendViaResendHttp(payload);
+  if (!resendClient) throw new Error('Resend SDK client not available');
   const { data, error } = await resendClient.emails.send(payload);
   if (error) throw new Error(`Resend SDK: ${error.message || JSON.stringify(error)}`);
   return { provider: 'resend:sdk', id: data?.id || null };
+};
+
+const sendViaSmtp = async (payload) => {
+  const transport = getSmtpTransport();
+  if (!transport) return null;
+  const mailOptions = {
+    from: payload.from,
+    to: payload.to,
+    subject: payload.subject,
+    html: payload.html,
+    text: payload.text,
+  };
+  if (payload.reply_to) mailOptions.replyTo = payload.reply_to;
+  const info = await transport.sendMail(mailOptions);
+  return { provider: 'smtp', id: info?.messageId || null };
 };
 
 export const sendEmail = async ({ to, subject, html, text, replyTo, tags }) => {
@@ -69,27 +112,59 @@ export const sendEmail = async ({ to, subject, html, text, replyTo, tags }) => {
     html: html || undefined,
     text: text || (html ? html.replace(/<[^>]*>/g, ' ') : undefined),
   };
-  if (replyTo) payload.reply_to = replyTo;
+  const resolvedReplyTo = replyTo !== undefined ? replyTo : defaultReplyTo();
+  if (resolvedReplyTo) payload.reply_to = resolvedReplyTo;
   if (tags && tags.length) payload.tags = tags;
-  if (ENV.RESEND_AUDIENCE_ID) payload.audience_id = ENV.RESEND_AUDIENCE_ID;
+  if (ENV.RESEND_AUDIENCE_ID && String(ENV.RESEND_AUDIENCE_ID).trim()) payload.audience_id = ENV.RESEND_AUDIENCE_ID;
 
-  if (apiKeyMissing) {
+  if (apiKeyMissing && !ENV.SMTP_HOST) {
     const devPreview = (payload.text || '').slice(0, 320);
     if (ENV.NODE_ENV === 'development') {
       console.log(`[email-dev] Resend key missing → preview to=${recipients.join(',')} subj=${subject}\n${devPreview}`);
       return { success: false, skipped: true, reason: 'RESEND_API_KEY missing; logged preview in dev.' };
     }
+    if (ENV.EMAIL_SOFT_FAIL) {
+      return { success: false, skipped: true, reason: 'No email provider configured (RESEND_API_KEY/SMTP_HOST missing).' };
+    }
     throw new Error('RESEND_API_KEY is not configured. Check backend/.env');
   }
 
-  let result;
-  try {
-    result = await sendViaResendSdk(payload);
-  } catch (sdkErr) {
-    if (resendClient) {
-      console.warn('[email] Resend SDK failed, retrying via direct HTTP:', sdkErr.message);
+  const errors = [];
+  let result = null;
+
+  if (!apiKeyMissing) {
+    try {
+      result = await sendViaResendSdk(payload);
+    } catch (sdkErr) {
+      errors.push(`resend:sdk: ${sdkErr.message}`);
+      if (resendClient) {
+        console.warn('[email] Resend SDK failed, retrying via direct HTTP:', sdkErr.message);
+      }
+      try {
+        result = await sendViaResendHttp(payload);
+      } catch (httpErr) {
+        errors.push(`resend:http: ${httpErr.message}`);
+        console.warn('[email] Resend HTTP failed:', httpErr.message);
+      }
     }
-    result = await sendViaResendHttp(payload);
+  }
+
+  if (!result) {
+    const smtpResult = await sendViaSmtp(payload);
+    if (smtpResult) {
+      result = smtpResult;
+    } else if (ENV.SMTP_HOST) {
+      errors.push('smtp: transport init or send returned null');
+    }
+  }
+
+  if (!result) {
+    const combinedReason = errors.join(' | ') || 'Unknown email send failure';
+    console.error(`[email] ALL providers failed for ${subject} → ${recipients.join(', ')}: ${combinedReason}`);
+    if (ENV.EMAIL_SOFT_FAIL) {
+      return { success: false, reason: combinedReason, failed: true };
+    }
+    throw new Error(`Email send failed: ${combinedReason}`);
   }
 
   console.log(`✅ [email] sent via ${result.provider}: ${subject} → ${recipients.join(', ')}`);
@@ -235,8 +310,10 @@ const tNotification = ({ name, title, message, type, link }) => {
 // ==================== PUBLIC SENDERS ====================
 
 const defaultReplyTo = () => {
-  const m = ENV.EMAIL_FROM.match(/<([^>]+)>/);
-  return m ? m[1] : ENV.EMAIL_FROM;
+  const from = buildFrom();
+  if (!from) return null;
+  const m = from.match(/<([^>]+)>/);
+  return m ? m[1] : from;
 };
 
 export const sendVerificationEmail = async (email, otp, name) => {
@@ -244,7 +321,6 @@ export const sendVerificationEmail = async (email, otp, name) => {
     to: email,
     subject: 'Verify your email · BishwasSetu',
     html: tVerification(name || email.split('@')[0], otp),
-    replyTo: defaultReplyTo(),
     tags: [{ name: 'category', value: 'verification' }],
   });
 };
@@ -254,7 +330,6 @@ export const sendPasswordResetEmail = async (email, otp, name) => {
     to: email,
     subject: 'Password reset code · BishwasSetu',
     html: tPasswordReset(name || email.split('@')[0], otp),
-    replyTo: defaultReplyTo(),
     tags: [{ name: 'category', value: 'password_reset' }],
   });
 };
@@ -264,7 +339,6 @@ export const sendWelcomeEmail = async (email, name, role = 'Patient') => {
     to: email,
     subject: `Welcome to BishwasSetu, ${role}!`,
     html: tWelcome(name || email.split('@')[0], role),
-    replyTo: defaultReplyTo(),
     tags: [{ name: 'category', value: 'welcome' }],
   });
 };
@@ -281,7 +355,6 @@ export const sendNotificationEmail = async ({ email, name, notification }) => {
       type: notification.type,
       link: notification.link,
     }),
-    replyTo: defaultReplyTo(),
     tags: [{ name: 'category', value: `notification_${(notification.type || 'INFO').toLowerCase()}` }],
   });
 };
