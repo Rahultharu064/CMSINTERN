@@ -1,27 +1,24 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { Menu, Search, Bell, Moon, Sun, ChevronDown, User, Settings, HelpCircle, LogOut, CheckCircle2 } from 'lucide-react';
+import { Menu, Search, Moon, Sun, ChevronDown, User, Settings, HelpCircle, LogOut } from 'lucide-react';
 import { useTheme } from '../../contexts/ThemeContext';
-import { activityFeed } from '../../utils/dashboardData';
 import { useNavigate } from 'react-router-dom';
 import { useAppDispatch, useAppSelector } from '../../hooks/authHooks.js';
 import { logoutUser } from '../../Redux/slices/authSlice.js';
 import { getInitials } from '../../utils/helpers.js';
+import NotificationDropdown from '../../components/ui/NotificationDropdown.jsx';
 
 const Topbar = ({ onMenu, title, subtitle }) => {
   const { theme, toggleTheme } = useTheme();
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
   const { user } = useAppSelector((s) => s.auth);
-  const [notifOpen, setNotifOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
-  const [activeModal, setActiveModal] = useState(null); // 'profile' | 'settings' | 'help'
-  const [toast, setToast] = useState('');
+  const [activeModal, setActiveModal] = useState(null);
   const ref = useRef(null);
 
   useEffect(() => {
     const onClick = (e) => {
       if (ref.current && !ref.current.contains(e.target)) {
-        setNotifOpen(false);
         setProfileOpen(false);
       }
     };
@@ -83,37 +80,8 @@ const Topbar = ({ onMenu, title, subtitle }) => {
           {theme === 'light' ? <Moon className="h-4.5 w-4.5" /> : <Sun className="h-4.5 w-4.5" />}
         </button>
 
-        {/* Notifications Popover */}
-        <div className="relative">
-          <button
-            onClick={() => { setNotifOpen((v) => !v); setProfileOpen(false); }}
-            className="relative flex h-9 w-9 items-center justify-center rounded-lg text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800"
-            aria-label="Notifications"
-          >
-            <Bell className="h-4.5 w-4.5" />
-            <span className="absolute right-1.5 top-1.5 h-2 w-2 rounded-full bg-rose-500 ring-2 ring-white dark:ring-slate-950" />
-          </button>
-
-          {notifOpen && (
-            <div className="animate-in fade-in zoom-in-95 absolute right-0 top-full mt-2 w-80 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xl dark:border-slate-800 dark:bg-slate-900">
-              <div className="flex items-center justify-between border-b border-slate-100 px-4 py-3 dark:border-slate-800">
-                <p className="text-sm font-bold text-slate-900 dark:text-white">Notifications</p>
-                <span className="rounded-full bg-primary-50 px-2 py-0.5 text-xs font-semibold text-primary-700 dark:bg-primary-900/30 dark:text-primary-300">5 new</span>
-              </div>
-              <ul className="max-h-80 divide-y divide-slate-100 overflow-y-auto dark:divide-slate-800">
-                {activityFeed.map((a) => (
-                  <li key={a.id} className="flex gap-3 px-4 py-3 hover:bg-slate-50 dark:hover:bg-slate-800/50">
-                    <span className="mt-1.5 h-2 w-2 shrink-0 rounded-full bg-primary-500" />
-                    <div>
-                      <p className="text-sm text-slate-700 dark:text-slate-300">{a.text}</p>
-                      <p className="mt-0.5 text-xs text-slate-400">{a.time}</p>
-                    </div>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          )}
-        </div>
+        {/* Live Notifications (with unread badge + dropdown → /notifications) */}
+        <NotificationDropdown />
 
         {/* User Profile Header Dropdown */}
         <div className="relative">

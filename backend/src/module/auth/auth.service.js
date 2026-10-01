@@ -3,7 +3,7 @@ import { Prisma } from "@prisma/client";
 import { hashPassword, comparePassword } from "../../utils/hash.js";
 import { generateAccessToken, generateRefreshToken, verifyRefreshToken } from "../../utils/jwt.js";
 import { resendOtp, sendOtp, verifyOtp } from "../../utils/otp.js";
-import { sendVerificationEmail, sendPasswordResetEmail } from "../../utils/email.js";
+import { sendWelcomeEmail } from "../../utils/email.js";
 import { MESSAGES } from "../../constans/messages.js";
 
 // ==================== REGISTER USER ====================
@@ -42,14 +42,11 @@ export const registerUser = async (userData) => {
         }
     });
 
-    // Send OTP for email verification
-    const otp = await sendOtp(email, 'EMAIL_VERIFICATION', newUser.id);
-    console.log(`[DEV/DEBUG] Generated Verification OTP for ${email}: ${otp}`);
-    
     try {
-        await sendVerificationEmail(email, otp, fullName);
-    } catch (error) {
-        console.error(`⚠️ Non-fatal: Failed to send verification email to ${email}.`, error.message);
+        await sendOtp(email, 'EMAIL_VERIFICATION', newUser.id, newUser.fullName);
+    } catch (otpError) {
+        console.error(`⚠️ Register: Failed to generate/send verification OTP for ${email}.`, otpError.message);
+        throw new Error('Could not send verification code. Please try again or contact support.');
     }
 
     // Generate tokens
@@ -216,19 +213,16 @@ export const adminLogin = async (email, password, userAgent, ipAddress) => {
 
 // ==================== VERIFY EMAIL ====================
 export const verifyEmail = async (email, otp) => {
-    // Verify OTP
     const verificationResult = await verifyOtp(email, otp, "EMAIL_VERIFICATION");
     if (!verificationResult.success) {
         throw new Error(MESSAGES.INVALID_OTP);
     }
 
-    // Update the user email verification status
     const user = await prisma.user.update({
         where: { email },
         data: { isEmailVerified: true }
     });
 
-    // Create audit log
     await prisma.auditLog.create({
         data: {
             userId: user.id,
@@ -238,10 +232,14 @@ export const verifyEmail = async (email, otp) => {
         }
     });
 
+    // Welcome email — non-blocking
+    sendWelcomeEmail(user.email, user.fullName, user.role).catch((err) =>
+        console.warn('verifyEmail: welcome email send failed (non-blocking):', err.message)
+    );
+
     return user;
 };
 
-// ==================== RESEND VERIFICATION OTP ====================
 export const resendVerificationOTP = async (email) => {
     const user = await prisma.user.findUnique({
         where: { email }
@@ -255,21 +253,11 @@ export const resendVerificationOTP = async (email) => {
         throw new Error(MESSAGES.EMAIL_ALREADY_VERIFIED);
     }
 
-    // Resend OTP
-    const otp = await resendOtp(email, 'EMAIL_VERIFICATION', user.id);
-    console.log(`[DEV/DEBUG] Resent Verification OTP for ${email}: ${otp}`);
+    await resendOtp(email, 'EMAIL_VERIFICATION', user.id, user.fullName);
 
-    try {
-        await sendVerificationEmail(email, otp, user.fullName);
-    } catch (error) {
-        console.error(`⚠️ Non-fatal: Failed to send verification email to ${email}.`, error.message);
-        // Returning success anyway so the client can still proceed if they read the OTP from logs in dev
-    }
-
-    return { message: "Verification OTP resent successfully" };
+    return { message: "Verification code resent successfully" };
 };
 
-// ==================== FORGOT PASSWORD ====================
 export const forgotPassword = async (email) => {
     const user = await prisma.user.findUnique({
         where: { email }
@@ -279,16 +267,9 @@ export const forgotPassword = async (email) => {
         throw new Error(MESSAGES.USER_NOT_FOUND);
     }
 
-    const otp = await sendOtp(email, 'PASSWORD_RESET', user.id);
-    console.log(`[DEV/DEBUG] Password Reset OTP for ${email}: ${otp}`);
-    
-    try {
-        await sendPasswordResetEmail(email, otp, user.fullName);
-    } catch (error) {
-        console.error(`⚠️ Non-fatal: Failed to send password reset email to ${email}.`, error.message);
-    }
+    await sendOtp(email, 'PASSWORD_RESET', user.id, user.fullName);
 
-    return { message: 'Password reset OTP sent successfully' };
+    return { message: 'Password reset code sent successfully' };
 };
 
 // ==================== RESET PASSWORD ====================

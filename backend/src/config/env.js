@@ -28,12 +28,15 @@ export const ENV = {
     process.env.RESET_PASSWORD_URL ||
     "http://localhost:3000/reset-password",
 
-  // Email
-  EMAIL_HOST: process.env.EMAIL_HOST,
-  EMAIL_PORT: parseInt(process.env.EMAIL_PORT) || 587,
-  EMAIL_USER: process.env.EMAIL_USER,
-  EMAIL_PASSWORD: process.env.EMAIL_PASSWORD,
-  EMAIL_FROM: process.env.EMAIL_FROM || "noreply@yourapp.com",
+  // Email (Resend-only — use EMAIL_FROM in RFC-5322 format: "Sender Name <addr@domain>")
+  EMAIL_FROM:
+    process.env.EMAIL_FROM ||
+    `BishwasSetu <${process.env.EMAIL_FROM_ADDR || "onboarding@resend.dev"}>`,
+
+  // Resend (https://resend.com/docs/api-reference/introduction)
+  EMAIL_PROVIDER: "resend",
+  RESEND_API_KEY: process.env.RESEND_API_KEY,
+  RESEND_AUDIENCE_ID: process.env.RESEND_AUDIENCE_ID || undefined,
 
   // OTP
   OTP_EXPIRY_MINUTES:
@@ -41,6 +44,9 @@ export const ENV = {
 
   OTP_LENGTH:
     parseInt(process.env.OTP_LENGTH) || 6,
+
+  OTP_MAX_ATTEMPTS: parseInt(process.env.OTP_MAX_ATTEMPTS) || 5,
+  OTP_LOCKOUT_MINUTES: parseInt(process.env.OTP_LOCKOUT_MINUTES) || 15,
 
   // OTP Rate Limit
   OTP_RATE_LIMIT_WINDOW:

@@ -1,4 +1,5 @@
 import prisma from '../../config/database.js';
+import { sendNotificationEmail } from '../../utils/email.js';
 
 export const listNotifications = async (userId, params = {}) => {
   const { page = 1, limit = 10, read, type } = params;
@@ -138,9 +139,9 @@ export const clearAll = async (userId) => {
 };
 
 export const createNotification = async (payload) => {
-  const { userId, title, message, type = 'INFO', link = null } = payload;
+  const { userId, title, message, type = 'INFO', link = null, emailNotify = true } = payload;
 
-  return await prisma.notification.create({
+  const record = await prisma.notification.create({
     data: {
       userId,
       title,
@@ -149,4 +150,26 @@ export const createNotification = async (payload) => {
       link,
     },
   });
+
+  if (emailNotify && userId) {
+    (async () => {
+      try {
+        const recipient = await prisma.user.findUnique({
+          where: { id: userId },
+          select: { email: true, fullName: true },
+        });
+        if (recipient?.email) {
+          await sendNotificationEmail({
+            email: recipient.email,
+            name: recipient.fullName,
+            notification: record,
+          });
+        }
+      } catch (emailErr) {
+        console.warn('notification.create: email dispatch failed (non-blocking):', emailErr.message);
+      }
+    })();
+  }
+
+  return record;
 };
