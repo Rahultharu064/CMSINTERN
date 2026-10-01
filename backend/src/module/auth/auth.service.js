@@ -7,8 +7,8 @@ import { sendWelcomeEmail } from "../../utils/email.js";
 import { MESSAGES } from "../../constans/messages.js";
 import { ENV } from "../../config/env.js";
 
-const includeDebugOtp = (otpSendFailed) => {
-    return ENV.NODE_ENV !== 'production' || otpSendFailed;
+const includeDebugOtp = () => {
+    return ENV.NODE_ENV !== 'production';
 };
 
 export const registerUser = async (userData) => {
@@ -50,7 +50,7 @@ export const registerUser = async (userData) => {
                     resp.otpSent = true;
                     resp.otpSendProvider = otpResult.otpSendProvider;
                 }
-                if (includeDebugOtp(emailSendFailed)) {
+                if (includeDebugOtp()) {
                     resp.debugOtp = actualOtp;
                 }
                 return resp;
@@ -67,8 +67,8 @@ export const registerUser = async (userData) => {
                         failedAttempts: 0,
                     }
                 });
-                console.error(`⚠️ Register: Resend/email failed for ${normalizedEmail} (user already existed). Using fallback OTP:`, fallbackOtp.otp);
-                return {
+                console.error('Register: resend failed for an existing unverified account; created a fallback OTP.');
+                const response = {
                     needsEmailVerification: true,
                     resendingVerification: true,
                     user: {
@@ -81,9 +81,12 @@ export const registerUser = async (userData) => {
                         isEmailVerified: safeUser.isEmailVerified,
                     },
                     emailSendFailed: true,
-                    debugOtp: fallbackOtp.otp,
-                    message: 'Email provider unavailable — please use the code shown to verify your account.'
+                    message: includeDebugOtp()
+                        ? 'Email provider unavailable — please use the code shown to verify your account.'
+                        : 'Email provider unavailable — please try again shortly to receive a verification code.'
                 };
+                if (includeDebugOtp()) response.debugOtp = fallbackOtp.otp;
+                return response;
             }
         }
         throw new Error(MESSAGES.EMAIL_ALREADY_EXIST || 'Email already exists. Please sign in instead.');
@@ -136,7 +139,7 @@ export const registerUser = async (userData) => {
         }
     } catch (otpError) {
         emailSendFailed = true;
-        console.error(`⚠️ Register: Failed to send verification OTP email to ${normalizedEmail}.`, otpError.message);
+        console.error('Register: failed to send verification OTP email.');
         try {
             fallbackOtpRecord = await prisma.oTP.create({
                 data: {
@@ -151,7 +154,7 @@ export const registerUser = async (userData) => {
             });
             sentOtp = fallbackOtpRecord.otp;
             otpSendReason = otpError.message || 'Fallback DB OTP created after sendOtp threw';
-            console.error(`⚠️ Register: Email provider unavailable. Created fallback DB OTP for ${normalizedEmail}:`, sentOtp);
+            console.error('Register: email provider unavailable; created a fallback OTP.');
         } catch (dbErr) {
             console.error('⚠️ Register: Could not create fallback OTP either:', dbErr.message);
         }
@@ -208,7 +211,7 @@ export const registerUser = async (userData) => {
         if (otpSendProvider) response.otpSendProvider = otpSendProvider;
     }
 
-    if (includeDebugOtp(emailSendFailed) && sentOtp) {
+    if (includeDebugOtp() && sentOtp) {
         response.debugOtp = sentOtp;
     }
 
@@ -384,7 +387,7 @@ export const resendVerificationOTP = async (email) => {
         resp.otpSent = true;
         if (otpResult.otpSendProvider) resp.otpSendProvider = otpResult.otpSendProvider;
     }
-    if (includeDebugOtp(!!otpResult.otpSendFailed)) {
+    if (includeDebugOtp()) {
         resp.debugOtp = otpResult.otp;
     }
     return resp;
@@ -411,7 +414,7 @@ export const forgotPassword = async (email) => {
         resp.otpSent = true;
         if (otpResult.otpSendProvider) resp.otpSendProvider = otpResult.otpSendProvider;
     }
-    if (includeDebugOtp(!!otpResult.otpSendFailed)) {
+    if (includeDebugOtp()) {
         resp.debugOtp = otpResult.otp;
     }
     return resp;

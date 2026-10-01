@@ -336,6 +336,7 @@ model OTP {
   expiresAt DateTime
   createdAt DateTime @default(now())
   isUsed    Boolean  @default(false)
+  failedAttempts Int @default(0)
   userId    String?
   user      User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
 

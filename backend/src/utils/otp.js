@@ -54,13 +54,11 @@ const generateOtpExpiry = (minutes = OTP_EXPIRY_MINUTES) => {
 
 const isOtpExpired = (expiryDate) => new Date() > new Date(expiryDate);
 
-const logOtpBanner = (email, type, otp, expiresAt, userId) => {
+const logOtpBanner = (type, expiresAt, userId) => {
   const expiryIso = new Date(expiresAt).toISOString();
   const uid = userId || 'n/a';
   console.warn(
-    '\n=================================== OTP ===================================\n' +
-    `Email: ${email} | Type: ${formatOtpType(type)} | OTP: ${otp} | Expires: ${expiryIso} | userId: ${uid}\n` +
-    '==========================================================================\n'
+    `OTP created | Type: ${formatOtpType(type)} | Expires: ${expiryIso} | userId: ${uid}`
   );
 };
 
@@ -143,7 +141,7 @@ const dispatchOtpEmail = async (email, otp, type, name) => {
 export const sendOtp = async (email, type = "EMAIL_VERIFICATION", userId = null, name) => {
   try {
     const { otp, record } = await prepareNewOtp(email, type, userId);
-    logOtpBanner(email, type, otp, record.expiresAt, userId);
+    logOtpBanner(type, record.expiresAt, userId);
     const dispatchResult = await dispatchOtpEmail(email, otp, type, name);
     if (!dispatchResult.success) {
       return {
@@ -218,7 +216,7 @@ export const verifyOtp = async (email, otp, type = "EMAIL_VERIFICATION") => {
 export const resendOtp = async (email, type = "EMAIL_VERIFICATION", userId = null, name) => {
   try {
     const { otp, record } = await prepareNewOtp(email, type, userId);
-    logOtpBanner(email, type, otp, record.expiresAt, userId);
+    logOtpBanner(type, record.expiresAt, userId);
     const dispatchResult = await dispatchOtpEmail(email, otp, type, name);
     if (!dispatchResult.success) {
       return {
